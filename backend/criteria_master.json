@@ -1,0 +1,102 @@
+[
+{
+  "model": "heritages.criterion",
+  "pk": 1,
+  "fields": {
+    "criteria_no": 1,
+    "description": "人間の創造的才能を表す傑作である",
+    "created_at": "2026-03-21T06:55:40.082Z",
+    "updated_at": "2026-03-21T06:56:41.393Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 2,
+  "fields": {
+    "criteria_no": 2,
+    "description": "建築、科学技術、記念碑、都市計画、景観設計の発展に重要な影響を与えた、ある期間にわたる価値観の交流又はある文化圏内での価値観の交流を示すものである",
+    "created_at": "2026-03-21T06:55:40.109Z",
+    "updated_at": "2026-03-21T06:56:51.564Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 3,
+  "fields": {
+    "criteria_no": 3,
+    "description": "現存するか消滅しているかにかかわらず、ある文化的伝統又は文明の存在を伝承する物証として無二の存在(少なくとも希有な存在)である",
+    "created_at": "2026-03-21T06:55:40.119Z",
+    "updated_at": "2026-03-21T06:57:11.958Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 4,
+  "fields": {
+    "criteria_no": 4,
+    "description": "歴史上の重要な段階を物語る建築物、その集合体、科学技術の集合体、あるいは景観を代表する顕著な見本である",
+    "created_at": "2026-03-21T06:55:40.128Z",
+    "updated_at": "2026-03-21T06:57:19.917Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 5,
+  "fields": {
+    "criteria_no": 5,
+    "description": "あるひとつの文化(または複数の文化)を特徴づけるような伝統的居住形態若しくは陸上・海上の土地利用形態を代表する顕著な見本である。又は、人類と環境とのふれあいを代表する顕著な見本である(特に不可逆的な変化によりその存続が危ぶまれているもの)",
+    "created_at": "2026-03-21T06:55:40.139Z",
+    "updated_at": "2026-03-21T06:57:32.967Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 6,
+  "fields": {
+    "criteria_no": 6,
+    "description": "顕著な普遍的価値を有する出来事(行事)、生きた伝統、思想、信仰、芸術的作品、あるいは文学的作品と直接または実質的関連がある(この基準は他の基準とあわせて用いられることが望ましい)",
+    "created_at": "2026-03-21T06:55:40.149Z",
+    "updated_at": "2026-03-21T06:57:48.598Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 7,
+  "fields": {
+    "criteria_no": 7,
+    "description": "最上級の自然現象、又は、類まれな自然美・美的価値を有する地域を包含する",
+    "created_at": "2026-03-21T06:55:40.158Z",
+    "updated_at": "2026-03-21T06:57:55.774Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 8,
+  "fields": {
+    "criteria_no": 8,
+    "description": "生命進化の記録や、地形形成における重要な進行中の地質学的過程、あるいは重要な地形学的又は自然地理学的特徴といった、地球の歴史の主要な段階を代表する顕著な見本である",
+    "created_at": "2026-03-21T06:55:40.168Z",
+    "updated_at": "2026-03-21T06:58:03.854Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 9,
+  "fields": {
+    "criteria_no": 9,
+    "description": "陸上・淡水域・沿岸・海洋の生態系や動植物群集の進化、発展において、重要な進行中の生態学的過程又は生物学的過程を代表する顕著な見本である",
+    "created_at": "2026-03-21T06:55:40.177Z",
+    "updated_at": "2026-03-21T06:58:09.603Z"
+  }
+},
+{
+  "model": "heritages.criterion",
+  "pk": 10,
+  "fields": {
+    "criteria_no": 10,
+    "description": "学術上又は保全上顕著な普遍的価値を有する絶滅のおそれのある種の生息地など、生物多様性の生息域内保全にとって最も重要な自然の生息地を包含する",
+    "created_at": "2026-03-21T06:55:40.187Z",
+    "updated_at": "2026-03-21T06:58:17.115Z"
+  }
+}
+]
