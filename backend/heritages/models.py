@@ -110,7 +110,7 @@ class Quiz(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
     def __str__(self):
-        return f"[{self.get_difficulty_level_display()}] {self.heritage.name}に関する問題"
+        return f"[{self.get_difficulty_display()}] {self.heritage.name}に関する問題"
 
     class Meta:
         verbose_name = "クイズ"
