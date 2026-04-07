@@ -11,22 +11,19 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.lg.jp' },
     ],
   },
-
-  // 既存のwebpack設定を「開発環境」のみに限定して適用
-  webpack: (config, { dev, isServer }) => {
-    if (dev) {
-      if (!isServer) {
-        config.watchOptions = {
-          poll: 500,
-          aggregateTimeout: 300,
-        };
-      }
-      return config;
-    }
-    
-    // 本番環境（Vercel）ではカスタム設定を返さない
-    return config;
-  },
 };
+
+// 開発環境（ローカル/Docker）のときだけ webpack プロパティを動的に追加
+if (process.env.NODE_ENV === 'development') {
+  nextConfig.webpack = (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      config.watchOptions = {
+        poll: 500,         // 0.5秒ごとにファイルをチェック
+        aggregateTimeout: 300, // 変更後300ms待ってから再ビルド
+      };
+    }
+    return config;
+  };
+}
 
 export default nextConfig;
