@@ -21,6 +21,8 @@ backend/media/
 backend/staticfiles/
 backend/.venv/
 backend/venv/
+**/__pycache__/
+*.py[cod]
 
 # --- Environment Variables (最重要) ---
 .env
