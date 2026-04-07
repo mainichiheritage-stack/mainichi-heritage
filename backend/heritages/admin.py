@@ -28,9 +28,10 @@ class HeritageAdmin(admin.ModelAdmin):
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
-    list_display = ('id', 'heritage', 'difficulty', 'question')
-    list_filter = ('difficulty', 'heritage')
-    search_fields = ('question', 'heritage__name')
+    # list_display = ('id', 'heritage', 'difficulty', 'question')
+    # list_filter = ('difficulty', 'heritage')
+    # search_fields = ('question', 'heritage__name')
+    list_display = ('id',)
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
