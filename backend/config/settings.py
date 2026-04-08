@@ -27,9 +27,13 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,backend')
 ALLOWED_HOSTS = allowed_hosts_env.split(',')
 
-if not DEBUG:
+IS_PRODUCTION = os.getenv('RENDER', 'False') == 'True'
+if IS_PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
+else:
+    # ローカル環境ではSSLリダイレクトをオフにする
+    SECURE_SSL_REDIRECT = False
 
 # Application definition
 
