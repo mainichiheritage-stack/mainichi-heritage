@@ -29,13 +29,17 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # ホスト許可設定
 # ALLOWED_HOSTS = get_env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1,backend')
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
 
 # --- Security & HTTPS ---
 if IS_PRODUCTION:
     # 本番（Render）環境
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = False
+    ALLOWED_HOSTS = [
+        'mainichi-heritage-api.onrender.com',
+        '.onrender.com',
+    ]
     # HSTS設定（ブラウザにHTTPSを記憶させる。必要に応じて有効化）
     # SECURE_HSTS_SECONDS = 31536000
     # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -43,6 +47,7 @@ if IS_PRODUCTION:
 else:
     # ローカル開発環境
     SECURE_SSL_REDIRECT = False
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend']
 
 # --- Application Definition ---
 INSTALLED_APPS = [
