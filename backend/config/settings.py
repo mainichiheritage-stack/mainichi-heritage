@@ -25,12 +25,16 @@ ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Security & Hosts
-if IS_PRODUCTION:
-    ALLOWED_HOSTS = ['mainichi-heritage-api.onrender.com', '.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    # 本番（Render）環境
+    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, 'mainichi-heritage-api.onrender.com', '.onrender.com']
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = False # Render manages SSL at the load balancer
+    SECURE_SSL_REDIRECT = False
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend']
+    # ローカル開発環境
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend', '*']
     SECURE_SSL_REDIRECT = False
 
 # Application Definition
