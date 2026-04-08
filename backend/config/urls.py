@@ -6,7 +6,7 @@ def health_check(request):
     return HttpResponse("OK")
 
 urlpatterns = [
-    path('', health_check),  # ルートにアクセスしたら OK を返す
+    path('', health_check),
     path('admin/', admin.site.urls),
     path('api/', include('heritages.urls')),
 ]
