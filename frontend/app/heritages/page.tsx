@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import QuizSettingsModal from '../../components/QuizSettingsModal';
 import {Pagination} from '../../components/Pagination';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 15;
 
 export default function HeritageListPage() {
   const [heritages, setHeritages] = useState<Heritage[]>([]);
