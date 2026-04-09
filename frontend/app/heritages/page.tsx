@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Heritage , Criterion } from '../types';
-import { MapPin, Calendar, Search, ExternalLink, Inbox, X , Info, PlayCircle } from 'lucide-react';
+import { Calendar, Search, ExternalLink, Inbox, X , Info, PlayCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import QuizSettingsModal from '../../components/QuizSettingsModal';
 import {Pagination} from '../../components/Pagination';
@@ -82,21 +82,74 @@ export default function HeritageListPage() {
   );
 
   const CriterionTooltip = ({ criterion }: { criterion: Criterion | number }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
     if (!criterion || typeof criterion === 'number') {
       return <span className="text-sm font-bold text-blue-600 px-1">{criterion}</span>;
     }
 
+    const closeTooltip = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setIsOpen(false);
+    };
+
     return (
-      <span className="group relative inline-block font-bold text-blue-600 border-b border-dotted border-blue-400 cursor-help mx-0.5">
-        {criterion.number}
-        <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-slate-800 text-white text-[11px] leading-relaxed rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-[110] shadow-2xl whitespace-normal">
-          <p className="font-bold border-b border-slate-600 mb-2 pb-1 text-blue-300 text-xs flex items-center gap-1">
-            <Info size={12} /> 登録基準 {criterion.number}
-          </p>
-          <p className="font-medium text-slate-200 mb-1">{criterion.short_name}</p>
-          <span className="text-slate-400 block mt-1">{criterion.description}</span>
-          <span className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800"></span>
-        </span>
+      <span 
+        className="relative inline-block mx-0.5"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="font-bold text-blue-600 border-b border-dotted border-blue-400 cursor-pointer focus:outline-none"
+        >
+          {criterion.number}
+        </button>
+
+        {isOpen && (
+          <>
+            {/* 背景レイヤー：スマホのみ有効 */}
+            <div 
+              className="fixed inset-0 z-[110] md:hidden bg-black/10" 
+              onClick={closeTooltip} 
+            />
+            
+            <div 
+              className={`
+                /* 基本スタイル */
+                p-6 bg-slate-800 text-white leading-relaxed rounded-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 z-[120]
+                
+                /* 【スマホ】画面の完全中央に配置 */
+                fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[320px] text-[13px]
+                
+                /* 【PC】マウスホバー時はボタンのすぐ上に表示 */
+                md:absolute md:top-auto md:bottom-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-0 md:mb-3 md:w-64 md:p-4 md:text-[11px]
+              `}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="font-bold border-b border-slate-600 mb-3 pb-2 text-blue-300 text-sm flex items-center gap-2">
+                <Info size={16} className="md:w-3 md:h-3" /> 登録基準 {criterion.number}
+              </p>
+              
+              <div className="space-y-2">
+                <p className="font-bold text-slate-100 text-sm md:text-[12px]">{criterion.short_name}</p>
+                <p className="text-slate-300 font-medium leading-relaxed">{criterion.description}</p>
+              </div>
+              
+              {/* 閉じるボタン */}
+              <button 
+                onClick={closeTooltip}
+                className="absolute top-4 right-4 p-1.5 text-slate-400 bg-slate-700/50 rounded-full hover:text-white md:hidden"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </>
+        )}
       </span>
     );
   };
@@ -160,10 +213,6 @@ export default function HeritageListPage() {
 
         {/* カード一覧 */}
         {heritages.length > 0 ? (
-          /* 修正ポイント1: 
-            grid-cols-2（スマホで2列）を追加。gap-3 でスマホ時の余白を調整。
-            md:grid-cols-2 lg:grid-cols-3 でタブレット・PCの挙動を維持。
-          */
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
             {heritages.map((h) => (
               <div
@@ -171,7 +220,6 @@ export default function HeritageListPage() {
                 onClick={() => setSelectedHeritage(h)}
                 className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-slate-100 group flex flex-col"
               >
-                {/* 修正ポイント2: スマホでは画像の高さを抑える（h-32 md:h-56） */}
                 <div className="relative h-32 md:h-56 bg-slate-200">
                   <Image
                     src={getHeritageImageUrl(h.id)}
@@ -181,22 +229,37 @@ export default function HeritageListPage() {
                     loading="lazy"
                     sizes="(max-width: 768px) 50vw, 33vw"
                   />
-                  {/* 出典リンクはスマホでは少し邪魔になるので、PCのみ表示またはサイズ縮小 */}
-                  <div className="absolute bottom-1 right-1 md:bottom-2 md:right-2 px-1.5 py-0.5 bg-black/50 backdrop-blur-md rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <a href={h.source_url} target="_blank" rel="noopener noreferrer" className="text-[7px] md:text-[9px] text-white flex items-center gap-1">
-                      出典 <ExternalLink className="w-2 h-2" />
+                  <div
+                    className={`
+                      absolute bottom-1 right-1 md:bottom-2 md:right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded-md z-20
+                      
+                      /* 【スマホ】表示しない、クリック無効 */
+                      hidden
+                      
+                      /* 【PC】常時表示、クリック有効 */
+                      md:flex md:opacity-100 md:pointer-events-auto
+                    `}
+                  >
+                    <a 
+                      href={h.source_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-[7px] md:text-[9px] text-white flex items-center gap-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      出典：{h.source_name || 'unknown'} <ExternalLink className="w-2 h-2" />
                     </a>
                   </div>
                 </div>
 
-                {/* 修正ポイント3: パディングをスマホ用に最適化 (p-3 md:p-6) */}
                 <div className="p-3 md:p-6 flex flex-col flex-1">
                   {/* タイトルのフォントサイズを調整 (text-sm md:text-xl) */}
                   <h2 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3 group-hover:text-blue-600 transition leading-tight line-clamp-2 md:min-h-[3.5rem]">
                     {h.name}
                   </h2>
 
-                  {/* 修正ポイント4: メタ情報はスマホでは最小限に（国名などは隠すか縮小） */}
                   <div className="flex items-center gap-1.5 md:gap-3 text-[9px] md:text-xs text-slate-500 mb-2 md:mb-4 flex-wrap">
                     <span 
                       style={{ backgroundColor: h.category === 1 ? '#af6700' : h.category === 2 ? '#008a33' : '#de00cb' }} 
@@ -207,12 +270,10 @@ export default function HeritageListPage() {
                     <div className="flex items-center gap-1"><Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" /> {h.registered_year}</div>
                   </div>
 
-                  {/* キャッチフレーズはスマホでは非表示にしてスッキリさせる */}
                   <p className="hidden md:block text-sm text-slate-500 line-clamp-2 leading-relaxed italic mb-6">
                     {h.catchphrase}
                   </p>
 
-                  {/* クイズボタンもスマホサイズに最適化 */}
                   <button
                     onClick={(e) => handleQuizClick(e, h.id)}
                     className="mt-auto w-full py-2 md:py-2.5 bg-blue-50 text-blue-600 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold flex items-center justify-center gap-1 md:gap-2 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 active:scale-[0.98]"
@@ -270,7 +331,7 @@ export default function HeritageListPage() {
 
             {/* モーダル内コンテンツ */}
             <div className="overflow-y-auto">
-              <div className="relative h-80">
+              <div className="relative h-56 md:h-80">
                 <Image
                   src={getHeritageImageUrl(selectedHeritage.id)}
                   alt={selectedHeritage.name}
@@ -291,7 +352,7 @@ export default function HeritageListPage() {
                   </a>
                 </div>
               </div>
-              <div className="p-8">
+              <div className="p-6 md:p-8">
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">{selectedHeritage.name}</h2>
                 <div className="space-y-4 text-slate-600 leading-relaxed">
                   <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100">

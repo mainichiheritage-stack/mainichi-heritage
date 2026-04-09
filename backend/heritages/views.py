@@ -16,23 +16,6 @@ class HeritageViewSet(viewsets.ReadOnlyModelViewSet):
     # 検索値設定（?search=）
     search_fields = ['name', 'description', 'countries__name']
 
-# class QuizViewSet(viewsets.ReadOnlyModelViewSet):
-#     serializer_class = QuizSerializer
-#     pagination_class = None
-
-#     def get_queryset(self):
-#         difficulty = self.request.query_params.get('level', '2')
-#         count = int(self.request.query_params.get('count', 5))
-#         heritage_id = self.request.query_params.get('heritage_id', '0')
-
-#         queryset = Quiz.objects.all()
-#         queryset = queryset.filter(difficulty=difficulty)
-#         if heritage_id and heritage_id != '0':
-#             queryset = queryset.filter(heritage=heritage_id)
-
-#         return queryset.order_by('?')[:count]
-    
-
 class QuizViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuizSerializer
     pagination_class = None
