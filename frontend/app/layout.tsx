@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "まいにち世界遺産 | 世界遺産検定 対策アプリ",
+    default: "まいにち世界遺産",
     template: "%s | まいにち世界遺産",
   },
   description:
