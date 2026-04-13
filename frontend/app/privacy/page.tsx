@@ -1,6 +1,13 @@
-import React from 'react';
-import { Lock, Eye, FileText, ShieldCheck, Mail, ExternalLink} from 'lucide-react';
-import Link from 'next/link';
+import React from "react";
+import {
+  Lock,
+  Eye,
+  FileText,
+  ShieldCheck,
+  Mail,
+  ExternalLink,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function PrivacyPolicy() {
   const lastUpdated = "2026年3月24日";
@@ -8,20 +15,18 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-slate-50 py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        
         {/* ヘッダー */}
         <div className="text-center mb-16">
           <div className="inline-flex p-3 bg-indigo-100 text-indigo-600 rounded-2xl mb-4">
             <Lock size={32} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">プライバシーポリシー</h1>
-          <p className="text-slate-500 text-sm">
-            最終更新日: {lastUpdated}
-          </p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-4">
+            プライバシーポリシー
+          </h1>
+          <p className="text-slate-500 text-sm">最終更新日: {lastUpdated}</p>
         </div>
 
         <div className="space-y-6">
-          
           <section className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
             <h2 className="text-lg font-bold flex items-center gap-2 mb-4 text-slate-800">
               <FileText className="text-indigo-500" size={20} />
@@ -63,7 +68,9 @@ export default function PrivacyPolicy() {
           </section>
 
           <section className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
-            <h2 className="text-lg font-bold mb-4 text-slate-800">4. Cookieの利用について</h2>
+            <h2 className="text-lg font-bold mb-4 text-slate-800">
+              4. Cookieの利用について
+            </h2>
             <p className="text-sm text-slate-600 leading-relaxed">
               当アプリでは、利便性の向上やアクセス解析のためにCookieを使用することがあります。ユーザーはブラウザの設定によりCookieを無効にすることができますが、その場合、一部の機能が利用できなくなる可能性があります。
             </p>
@@ -75,14 +82,20 @@ export default function PrivacyPolicy() {
             </h2>
             <div className="text-sm text-slate-600 space-y-4 leading-relaxed">
               <p>
-                当サイトでは、第三者配信の広告サービス「Google アドセンス」を利用しています。
+                当サイトでは、第三者配信の広告サービス「Google
+                アドセンス」を利用しています。
               </p>
               <p>
                 広告配信事業者は、ユーザーの興味に応じた広告を表示するためにCookie（クッキー）を使用することがあります。これにより、ユーザーの当サイトや他サイトへのアクセス情報に基づいた広告が配信されます。
               </p>
               <p>
                 ユーザーは、Googleの広告設定（
-                <a href="https://adssettings.google.com/authenticated" target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">
+                <a
+                  href="https://adssettings.google.com/authenticated"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 underline"
+                >
                   https://adssettings.google.com/authenticated
                 </a>
                 ）から、パーソナライズ広告を無効にすることができます。
@@ -98,7 +111,7 @@ export default function PrivacyPolicy() {
             <p className="text-sm text-slate-600 leading-relaxed mb-6">
               プライバシーポリシーに関するご質問や、個人情報の取り扱いに関するお問い合わせは、以下のフォームよりご連絡ください。
             </p>
-            <Link 
+            <Link
               href="https://forms.gle/nydMBWr1UyAXJZ3a6"
               target="_blank"
               rel="noopener noreferrer"
