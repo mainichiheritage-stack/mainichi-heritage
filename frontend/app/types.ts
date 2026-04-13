@@ -12,6 +12,7 @@ export interface Country {
 
 export interface Heritage {
   id: number;
+  code: string; // e.g., "h00001"
   name: string;
   category: number; // 1: 文化, 2: 自然, 3: 複合
   registered_year: number;

@@ -20,7 +20,7 @@ class Country(models.Model):
         (5, 'アラブ諸国'),
     ]
 
-    code = models.CharField(max_length=4, null=True, blank=True, verbose_name="国コード")
+    code = models.CharField(max_length=10, unique=True, verbose_name="国コード")
     name = models.CharField(max_length=100, verbose_name="国名")
     region = models.IntegerField(
         choices=REGION_CHOICES, 
@@ -38,6 +38,11 @@ class Country(models.Model):
         verbose_name_plural = "国マスタ"
 
 class Criterion(models.Model):
+    code = models.CharField(
+        max_length=10, 
+        unique=True,
+        verbose_name="登録基準コード"
+    )
     number = models.CharField(max_length=10, unique=True, verbose_name="登録基準番号")
     short_name = models.CharField(max_length=50, verbose_name="要約")
     description = models.TextField(verbose_name="基準の内容")
@@ -58,6 +63,11 @@ class Heritage(models.Model):
     ]
 
     # 世界遺産情報
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="コード"
+    )
     name = models.CharField(max_length=255, verbose_name="世界遺産名")
     category = models.IntegerField(choices=CATEGORY_CHOICES, verbose_name="カテゴリー")
     catchphrase = models.CharField(max_length=255,blank=True, null=True,verbose_name="キャッチフレーズ")
@@ -94,6 +104,7 @@ class Quiz(models.Model):
         related_name='quizzes',
         verbose_name="対象の遺産"
     )
+    code = models.CharField(max_length=20, unique=True, verbose_name="クイズコード")
     question = models.TextField(verbose_name="問題文")
     choice_correct = models.CharField(max_length=255, verbose_name="正解")
     choice_distractor1 = models.CharField(max_length=255, verbose_name="不正解1")
