@@ -1,0 +1,977 @@
+[
+  {
+    "code": "AF",
+    "name": "アフガニスタン",
+    "region": 1
+  },
+  {
+    "code": "AL",
+    "name": "アルバニア",
+    "region": 2
+  },
+  {
+    "code": "DZ",
+    "name": "アルジェリア",
+    "region": 5
+  },
+  {
+    "code": "AD",
+    "name": "アンドラ",
+    "region": 2
+  },
+  {
+    "code": "AO",
+    "name": "アンゴラ",
+    "region": 4
+  },
+  {
+    "code": "AG",
+    "name": "アンティグア・バーブーダ",
+    "region": 3
+  },
+  {
+    "code": "AR",
+    "name": "アルゼンチン",
+    "region": 3
+  },
+  {
+    "code": "AM",
+    "name": "アルメニア",
+    "region": 2
+  },
+  {
+    "code": "AU",
+    "name": "オーストラリア",
+    "region": 1
+  },
+  {
+    "code": "AT",
+    "name": "オーストリア",
+    "region": 2
+  },
+  {
+    "code": "AZ",
+    "name": "アゼルバイジャン",
+    "region": 2
+  },
+  {
+    "code": "BS",
+    "name": "バハマ",
+    "region": 3
+  },
+  {
+    "code": "BH",
+    "name": "バーレーン",
+    "region": 5
+  },
+  {
+    "code": "BD",
+    "name": "バングラデシュ",
+    "region": 1
+  },
+  {
+    "code": "BB",
+    "name": "バルバドス",
+    "region": 3
+  },
+  {
+    "code": "BY",
+    "name": "ベラルーシ",
+    "region": 2
+  },
+  {
+    "code": "BE",
+    "name": "ベルギー",
+    "region": 2
+  },
+  {
+    "code": "BZ",
+    "name": "ベリーズ",
+    "region": 3
+  },
+  {
+    "code": "BJ",
+    "name": "ベナン",
+    "region": 4
+  },
+  {
+    "code": "BT",
+    "name": "ブータン",
+    "region": 1
+  },
+  {
+    "code": "BO",
+    "name": "ボリビア",
+    "region": 3
+  },
+  {
+    "code": "BA",
+    "name": "ボスニア・ヘルツェゴビナ",
+    "region": 2
+  },
+  {
+    "code": "BW",
+    "name": "ボツワナ",
+    "region": 4
+  },
+  {
+    "code": "BR",
+    "name": "ブラジル",
+    "region": 3
+  },
+  {
+    "code": "BN",
+    "name": "ブルネイ",
+    "region": 1
+  },
+  {
+    "code": "BG",
+    "name": "ブルガリア",
+    "region": 2
+  },
+  {
+    "code": "BF",
+    "name": "ブルキナファソ",
+    "region": 4
+  },
+  {
+    "code": "BI",
+    "name": "ブルンジ",
+    "region": 4
+  },
+  {
+    "code": "CV",
+    "name": "カーボベルデ",
+    "region": 4
+  },
+  {
+    "code": "KH",
+    "name": "カンボジア",
+    "region": 1
+  },
+  {
+    "code": "CM",
+    "name": "カメルーン",
+    "region": 4
+  },
+  {
+    "code": "CA",
+    "name": "カナダ",
+    "region": 2
+  },
+  {
+    "code": "CF",
+    "name": "中央アフリカ",
+    "region": 4
+  },
+  {
+    "code": "TD",
+    "name": "チャド",
+    "region": 4
+  },
+  {
+    "code": "CL",
+    "name": "チリ",
+    "region": 3
+  },
+  {
+    "code": "CN",
+    "name": "中国",
+    "region": 1
+  },
+  {
+    "code": "CO",
+    "name": "コロンビア",
+    "region": 3
+  },
+  {
+    "code": "KM",
+    "name": "コモロ",
+    "region": 4
+  },
+  {
+    "code": "CG",
+    "name": "コンゴ共和国",
+    "region": 4
+  },
+  {
+    "code": "CD",
+    "name": "コンゴ民主共和国",
+    "region": 4
+  },
+  {
+    "code": "CR",
+    "name": "コスタリカ",
+    "region": 3
+  },
+  {
+    "code": "CI",
+    "name": "コートジボワール",
+    "region": 4
+  },
+  {
+    "code": "HR",
+    "name": "クロアチア",
+    "region": 2
+  },
+  {
+    "code": "CU",
+    "name": "キューバ",
+    "region": 3
+  },
+  {
+    "code": "CY",
+    "name": "キプロス",
+    "region": 2
+  },
+  {
+    "code": "CZ",
+    "name": "チェコ",
+    "region": 2
+  },
+  {
+    "code": "DK",
+    "name": "デンマーク",
+    "region": 2
+  },
+  {
+    "code": "DJ",
+    "name": "ジブチ",
+    "region": 5
+  },
+  {
+    "code": "DM",
+    "name": "ドミニカ国",
+    "region": 3
+  },
+  {
+    "code": "DO",
+    "name": "ドミニカ共和国",
+    "region": 3
+  },
+  {
+    "code": "EC",
+    "name": "エクアドル",
+    "region": 3
+  },
+  {
+    "code": "EG",
+    "name": "エジプト",
+    "region": 5
+  },
+  {
+    "code": "SV",
+    "name": "エルサルバドル",
+    "region": 3
+  },
+  {
+    "code": "GQ",
+    "name": "赤道ギニア",
+    "region": 4
+  },
+  {
+    "code": "ER",
+    "name": "エリトリア",
+    "region": 4
+  },
+  {
+    "code": "EE",
+    "name": "エストニア",
+    "region": 2
+  },
+  {
+    "code": "SZ",
+    "name": "エスワティニ",
+    "region": 4
+  },
+  {
+    "code": "ET",
+    "name": "エチオピア",
+    "region": 4
+  },
+  {
+    "code": "FJ",
+    "name": "フィジー",
+    "region": 1
+  },
+  {
+    "code": "FI",
+    "name": "フィンランド",
+    "region": 2
+  },
+  {
+    "code": "FR",
+    "name": "フランス",
+    "region": 2
+  },
+  {
+    "code": "GA",
+    "name": "ガボン",
+    "region": 4
+  },
+  {
+    "code": "GM",
+    "name": "ガンビア",
+    "region": 4
+  },
+  {
+    "code": "GE",
+    "name": "ジョージア",
+    "region": 2
+  },
+  {
+    "code": "DE",
+    "name": "ドイツ",
+    "region": 2
+  },
+  {
+    "code": "GH",
+    "name": "ガーナ",
+    "region": 4
+  },
+  {
+    "code": "GR",
+    "name": "ギリシャ",
+    "region": 2
+  },
+  {
+    "code": "GD",
+    "name": "グレナダ",
+    "region": 3
+  },
+  {
+    "code": "GT",
+    "name": "グアテマラ",
+    "region": 3
+  },
+  {
+    "code": "GN",
+    "name": "ギニア",
+    "region": 4
+  },
+  {
+    "code": "GW",
+    "name": "ギニアビサウ",
+    "region": 4
+  },
+  {
+    "code": "GY",
+    "name": "ガイアナ",
+    "region": 3
+  },
+  {
+    "code": "HT",
+    "name": "ハイチ",
+    "region": 3
+  },
+  {
+    "code": "VA",
+    "name": "バチカン市国",
+    "region": 2
+  },
+  {
+    "code": "HN",
+    "name": "ホンジュラス",
+    "region": 3
+  },
+  {
+    "code": "HU",
+    "name": "ハンガリー",
+    "region": 2
+  },
+  {
+    "code": "IS",
+    "name": "アイスランド",
+    "region": 2
+  },
+  {
+    "code": "IN",
+    "name": "インド",
+    "region": 1
+  },
+  {
+    "code": "ID",
+    "name": "インドネシア",
+    "region": 1
+  },
+  {
+    "code": "IR",
+    "name": "イラン",
+    "region": 1
+  },
+  {
+    "code": "IQ",
+    "name": "イラク",
+    "region": 5
+  },
+  {
+    "code": "IE",
+    "name": "アイルランド",
+    "region": 2
+  },
+  {
+    "code": "IL",
+    "name": "イスラエル",
+    "region": 2
+  },
+  {
+    "code": "IT",
+    "name": "イタリア",
+    "region": 2
+  },
+  {
+    "code": "JM",
+    "name": "ジャマイカ",
+    "region": 3
+  },
+  {
+    "code": "JP",
+    "name": "日本",
+    "region": 1
+  },
+  {
+    "code": "JO",
+    "name": "ヨルダン",
+    "region": 5
+  },
+  {
+    "code": "KZ",
+    "name": "カザフスタン",
+    "region": 1
+  },
+  {
+    "code": "KE",
+    "name": "ケニア",
+    "region": 4
+  },
+  {
+    "code": "KI",
+    "name": "キリバス",
+    "region": 1
+  },
+  {
+    "code": "KP",
+    "name": "北朝鮮",
+    "region": 1
+  },
+  {
+    "code": "KR",
+    "name": "韓国",
+    "region": 1
+  },
+  {
+    "code": "KW",
+    "name": "クウェート",
+    "region": 5
+  },
+  {
+    "code": "KG",
+    "name": "キルギス",
+    "region": 1
+  },
+  {
+    "code": "LA",
+    "name": "ラオス",
+    "region": 1
+  },
+  {
+    "code": "LV",
+    "name": "ラトビア",
+    "region": 2
+  },
+  {
+    "code": "LB",
+    "name": "レバノン",
+    "region": 5
+  },
+  {
+    "code": "LS",
+    "name": "レソト",
+    "region": 4
+  },
+  {
+    "code": "LR",
+    "name": "リベリア",
+    "region": 4
+  },
+  {
+    "code": "LY",
+    "name": "リビア",
+    "region": 5
+  },
+  {
+    "code": "LI",
+    "name": "リヒテンシュタイン",
+    "region": 2
+  },
+  {
+    "code": "LT",
+    "name": "リトアニア",
+    "region": 2
+  },
+  {
+    "code": "LU",
+    "name": "ルクセンブルク",
+    "region": 2
+  },
+  {
+    "code": "MG",
+    "name": "マダガスカル",
+    "region": 4
+  },
+  {
+    "code": "MW",
+    "name": "マラウイ",
+    "region": 4
+  },
+  {
+    "code": "MY",
+    "name": "マレーシア",
+    "region": 1
+  },
+  {
+    "code": "MV",
+    "name": "モルディブ",
+    "region": 1
+  },
+  {
+    "code": "ML",
+    "name": "マリ",
+    "region": 4
+  },
+  {
+    "code": "MT",
+    "name": "マルタ",
+    "region": 2
+  },
+  {
+    "code": "MH",
+    "name": "マーシャル諸島",
+    "region": 1
+  },
+  {
+    "code": "MR",
+    "name": "モーリタニア",
+    "region": 5
+  },
+  {
+    "code": "MU",
+    "name": "モーリシャス",
+    "region": 4
+  },
+  {
+    "code": "MX",
+    "name": "メキシコ",
+    "region": 3
+  },
+  {
+    "code": "FM",
+    "name": "ミクロネシア",
+    "region": 1
+  },
+  {
+    "code": "MD",
+    "name": "モルドバ",
+    "region": 2
+  },
+  {
+    "code": "MC",
+    "name": "モナコ",
+    "region": 2
+  },
+  {
+    "code": "MN",
+    "name": "モンゴル",
+    "region": 1
+  },
+  {
+    "code": "ME",
+    "name": "モンテネグロ",
+    "region": 2
+  },
+  {
+    "code": "MA",
+    "name": "モロッコ",
+    "region": 5
+  },
+  {
+    "code": "MZ",
+    "name": "モザンビーク",
+    "region": 4
+  },
+  {
+    "code": "MM",
+    "name": "ミャンマー",
+    "region": 1
+  },
+  {
+    "code": "NA",
+    "name": "ナミビア",
+    "region": 4
+  },
+  {
+    "code": "NR",
+    "name": "ナウル",
+    "region": 1
+  },
+  {
+    "code": "NP",
+    "name": "ネパール",
+    "region": 1
+  },
+  {
+    "code": "NL",
+    "name": "オランダ",
+    "region": 2
+  },
+  {
+    "code": "NZ",
+    "name": "ニュージーランド",
+    "region": 1
+  },
+  {
+    "code": "NI",
+    "name": "ニカラグア",
+    "region": 3
+  },
+  {
+    "code": "NE",
+    "name": "ニジェール",
+    "region": 4
+  },
+  {
+    "code": "NG",
+    "name": "ナイジェリア",
+    "region": 4
+  },
+  {
+    "code": "MK",
+    "name": "北マケドニア",
+    "region": 2
+  },
+  {
+    "code": "NO",
+    "name": "ノルウェー",
+    "region": 2
+  },
+  {
+    "code": "OM",
+    "name": "オマーン",
+    "region": 5
+  },
+  {
+    "code": "PK",
+    "name": "パキスタン",
+    "region": 1
+  },
+  {
+    "code": "PW",
+    "name": "パラオ",
+    "region": 1
+  },
+  {
+    "code": "PS",
+    "name": "パレスチナ",
+    "region": 5
+  },
+  {
+    "code": "PA",
+    "name": "パナマ",
+    "region": 3
+  },
+  {
+    "code": "PG",
+    "name": "パプアニューギニア",
+    "region": 1
+  },
+  {
+    "code": "PY",
+    "name": "パラグアイ",
+    "region": 3
+  },
+  {
+    "code": "PE",
+    "name": "ペルー",
+    "region": 3
+  },
+  {
+    "code": "PH",
+    "name": "フィリピン",
+    "region": 1
+  },
+  {
+    "code": "PL",
+    "name": "ポーランド",
+    "region": 2
+  },
+  {
+    "code": "PT",
+    "name": "ポルトガル",
+    "region": 2
+  },
+  {
+    "code": "QA",
+    "name": "カタール",
+    "region": 5
+  },
+  {
+    "code": "RO",
+    "name": "ルーマニア",
+    "region": 2
+  },
+  {
+    "code": "RU",
+    "name": "ロシア",
+    "region": 2
+  },
+  {
+    "code": "RW",
+    "name": "ルワンダ",
+    "region": 4
+  },
+  {
+    "code": "KN",
+    "name": "セントクリストファー・ネービス",
+    "region": 3
+  },
+  {
+    "code": "LC",
+    "name": "セントルシア",
+    "region": 3
+  },
+  {
+    "code": "VC",
+    "name": "セントビンセント・グレナディーン",
+    "region": 3
+  },
+  {
+    "code": "WS",
+    "name": "サモア",
+    "region": 1
+  },
+  {
+    "code": "SM",
+    "name": "サンマリノ",
+    "region": 2
+  },
+  {
+    "code": "ST",
+    "name": "サントメ・プリンシペ",
+    "region": 4
+  },
+  {
+    "code": "SA",
+    "name": "サウジアラビア",
+    "region": 5
+  },
+  {
+    "code": "SN",
+    "name": "セネガル",
+    "region": 4
+  },
+  {
+    "code": "RS",
+    "name": "セルビア",
+    "region": 2
+  },
+  {
+    "code": "SC",
+    "name": "セーシェル",
+    "region": 4
+  },
+  {
+    "code": "SL",
+    "name": "シエラレオネ",
+    "region": 4
+  },
+  {
+    "code": "SG",
+    "name": "シンガポール",
+    "region": 1
+  },
+  {
+    "code": "SK",
+    "name": "スロバキア",
+    "region": 2
+  },
+  {
+    "code": "SI",
+    "name": "スロベニア",
+    "region": 2
+  },
+  {
+    "code": "SB",
+    "name": "ソロモン諸島",
+    "region": 1
+  },
+  {
+    "code": "SO",
+    "name": "ソマリア",
+    "region": 5
+  },
+  {
+    "code": "ZA",
+    "name": "南アフリカ",
+    "region": 4
+  },
+  {
+    "code": "SS",
+    "name": "南スーダン",
+    "region": 4
+  },
+  {
+    "code": "ES",
+    "name": "スペイン",
+    "region": 2
+  },
+  {
+    "code": "LK",
+    "name": "スリランカ",
+    "region": 1
+  },
+  {
+    "code": "SD",
+    "name": "スーダン",
+    "region": 5
+  },
+  {
+    "code": "SR",
+    "name": "スリナム",
+    "region": 3
+  },
+  {
+    "code": "SE",
+    "name": "スウェーデン",
+    "region": 2
+  },
+  {
+    "code": "CH",
+    "name": "スイス",
+    "region": 2
+  },
+  {
+    "code": "SY",
+    "name": "シリア",
+    "region": 5
+  },
+  {
+    "code": "TJ",
+    "name": "タジキスタン",
+    "region": 1
+  },
+  {
+    "code": "TZ",
+    "name": "タンザニア",
+    "region": 4
+  },
+  {
+    "code": "TH",
+    "name": "タイ",
+    "region": 1
+  },
+  {
+    "code": "TL",
+    "name": "東ティモール",
+    "region": 1
+  },
+  {
+    "code": "TG",
+    "name": "トーゴ",
+    "region": 4
+  },
+  {
+    "code": "TO",
+    "name": "トンガ",
+    "region": 1
+  },
+  {
+    "code": "TT",
+    "name": "トリニダード・トバゴ",
+    "region": 3
+  },
+  {
+    "code": "TN",
+    "name": "チュニジア",
+    "region": 5
+  },
+  {
+    "code": "TR",
+    "name": "トルコ",
+    "region": 2
+  },
+  {
+    "code": "TM",
+    "name": "トルクメニスタン",
+    "region": 1
+  },
+  {
+    "code": "TV",
+    "name": "ツバル",
+    "region": 1
+  },
+  {
+    "code": "UG",
+    "name": "ウガンダ",
+    "region": 4
+  },
+  {
+    "code": "UA",
+    "name": "ウクライナ",
+    "region": 2
+  },
+  {
+    "code": "AE",
+    "name": "アラブ首長国連邦",
+    "region": 5
+  },
+  {
+    "code": "GB",
+    "name": "イギリス",
+    "region": 2
+  },
+  {
+    "code": "US",
+    "name": "アメリカ合衆国",
+    "region": 2
+  },
+  {
+    "code": "UY",
+    "name": "ウルグアイ",
+    "region": 3
+  },
+  {
+    "code": "UZ",
+    "name": "ウズベキスタン",
+    "region": 1
+  },
+  {
+    "code": "VU",
+    "name": "バヌアツ",
+    "region": 1
+  },
+  {
+    "code": "VE",
+    "name": "ベネズエラ",
+    "region": 3
+  },
+  {
+    "code": "VN",
+    "name": "ベトナム",
+    "region": 1
+  },
+  {
+    "code": "YE",
+    "name": "イエメン",
+    "region": 5
+  },
+  {
+    "code": "ZM",
+    "name": "ザンビア",
+    "region": 4
+  },
+  {
+    "code": "ZW",
+    "name": "ジンバブエ",
+    "region": 4
+  }
+]
