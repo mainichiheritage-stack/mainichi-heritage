@@ -33,10 +33,8 @@ export default function HeritageListPage() {
   const [selectedQuizHeritageCode, setSelectedQuizHeritageCode] =
     useState<string>("");
 
-  const getHeritageImageUrl = (h_id: number) => {
-    // IDを5桁でゼロ埋め (例: 1 -> "00001")
-    const paddedId = String(h_id).padStart(5, "0");
-    const filename = `${paddedId}.jpg`;
+  const getHeritageImageUrl = (h_code: string) => {
+    const filename = `${h_code}.jpg`;
 
     const baseUrl =
       process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "/images/heritages";
@@ -257,7 +255,7 @@ export default function HeritageListPage() {
               >
                 <div className="relative h-32 md:h-56 bg-slate-200">
                   <Image
-                    src={getHeritageImageUrl(h.id)}
+                    src={getHeritageImageUrl(h.code)}
                     alt={h.name}
                     fill
                     className="object-cover"
@@ -372,6 +370,7 @@ export default function HeritageListPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setSelectedHeritage(null)}
         >
+          {selectedHeritage.code}
           <div
             className="bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -387,7 +386,7 @@ export default function HeritageListPage() {
             <div className="overflow-y-auto">
               <div className="relative h-56 md:h-80">
                 <Image
-                  src={getHeritageImageUrl(selectedHeritage.id)}
+                  src={getHeritageImageUrl(selectedHeritage.code)}
                   alt={selectedHeritage.name}
                   fill
                   className="object-cover"
