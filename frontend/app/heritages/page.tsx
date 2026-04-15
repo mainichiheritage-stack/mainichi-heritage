@@ -33,16 +33,6 @@ export default function HeritageListPage() {
   const [selectedQuizHeritageCode, setSelectedQuizHeritageCode] =
     useState<string>("");
 
-  const getHeritageImageUrl = (h_code: string) => {
-    const filename = `${h_code}.jpg`;
-
-    const baseUrl =
-      process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "/images/heritages";
-    const separator = baseUrl.endsWith("/") ? "" : "/";
-
-    return `${baseUrl}${separator}${filename}`;
-  };
-
   const fetchHeritages = useCallback(async () => {
     setLoading(true);
     try {
@@ -255,9 +245,10 @@ export default function HeritageListPage() {
               >
                 <div className="relative h-32 md:h-56 bg-slate-200">
                   <Image
-                    src={getHeritageImageUrl(h.code)}
-                    alt={h.name}
+                    src={h.image_url || ""}
+                    alt={""}
                     fill
+                    unoptimized
                     className="object-cover"
                     loading="lazy"
                     sizes="(max-width: 768px) 50vw, 33vw"
@@ -386,9 +377,10 @@ export default function HeritageListPage() {
             <div className="overflow-y-auto">
               <div className="relative h-56 md:h-80">
                 <Image
-                  src={getHeritageImageUrl(selectedHeritage.code)}
+                  src={selectedHeritage.image_url || "/images/no-image.jpg"}
                   alt={selectedHeritage.name}
                   fill
+                  unoptimized
                   className="object-cover"
                   loading="lazy"
                   sizes="(max-width: 768px) 100vw, 33vw"
