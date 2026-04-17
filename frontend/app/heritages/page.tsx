@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Heritage, Criterion } from "../types";
 import {
   Calendar,
@@ -20,13 +21,22 @@ import { Pagination } from "../../components/Pagination";
 const ITEMS_PER_PAGE = 15;
 
 export default function HeritageListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // --- URLパラメータから現在の状態を同期 ---
+  const querySearch = searchParams.get("search") || "";
+  const queryCategory = searchParams.get("category") || "0";
+  const queryPage = Number(searchParams.get("page")) || 1;
+
+  // --- 状態管理 ---
   const [heritages, setHeritages] = useState<Heritage[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [inputText, setInputText] = useState("");
-  const [activeSearchTerm, setActiveSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("0");
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // 入力中のテキスト（検索ボタン押下で確定）
+  const [inputText, setInputText] = useState(querySearch);
+
   const [selectedHeritage, setSelectedHeritage] = useState<Heritage | null>(
     null,
   );
@@ -34,12 +44,14 @@ export default function HeritageListPage() {
   const [selectedQuizHeritageCode, setSelectedQuizHeritageCode] =
     useState<string>("");
 
+  // --- データ取得ロジック ---
   const fetchHeritages = useCallback(async () => {
     setLoading(true);
     try {
       const categoryParam =
-        categoryFilter !== "0" ? `&category=${categoryFilter}` : "";
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/heritages/?page=${currentPage}&search=${activeSearchTerm}${categoryParam}`;
+        queryCategory !== "0" ? `&category=${queryCategory}` : "";
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/heritages/?page=${queryPage}&search=${encodeURIComponent(querySearch)}${categoryParam}`;
+
       const res = await fetch(url);
       const data = await res.json();
 
@@ -50,16 +62,47 @@ export default function HeritageListPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, activeSearchTerm, categoryFilter]);
+  }, [queryPage, querySearch, queryCategory]);
 
   useEffect(() => {
     fetchHeritages();
-  }, [fetchHeritages, categoryFilter]);
+    setInputText(querySearch);
+  }, [fetchHeritages, querySearch]);
+
+  // --- 画面遷移（URL更新）ロジック ---
+  const updateNavigation = (updates: {
+    search?: string;
+    category?: string;
+    page?: number;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (updates.search !== undefined) params.set("search", updates.search);
+    if (updates.category !== undefined)
+      params.set("category", updates.category);
+
+    // 条件が変わった場合は1ページ目へ、ページ変更のみの場合はそのページへ
+    if (updates.page !== undefined) {
+      params.set("page", updates.page.toString());
+    } else {
+      params.set("page", "1");
+    }
+
+    router.push(`?${params.toString()}`);
+  };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setActiveSearchTerm(inputText);
-    setCurrentPage(1);
+    updateNavigation({ search: inputText });
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
+
+  const handleCategoryChange = (val: string) => {
+    updateNavigation({ category: val });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    updateNavigation({ page: newPage });
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
@@ -71,26 +114,13 @@ export default function HeritageListPage() {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "instant" });
-  };
-
-  if (loading && heritages.length === 0)
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-slate-500 gap-3">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <p>読み込み中...</p>
-      </div>
-    );
-
+  // --- サブコンポーネント ---
   const CriterionTooltip = ({
     criterion,
   }: {
     criterion: Criterion | number;
   }) => {
     const [isOpen, setIsOpen] = useState(false);
-
     if (!criterion || typeof criterion === "number") {
       return (
         <span className="text-sm font-bold text-blue-600 px-1">
@@ -98,12 +128,10 @@ export default function HeritageListPage() {
         </span>
       );
     }
-
     const closeTooltip = (e: React.MouseEvent) => {
       e.stopPropagation();
       setIsOpen(false);
     };
-
     return (
       <span
         className="relative inline-block mx-0.5"
@@ -120,33 +148,20 @@ export default function HeritageListPage() {
         >
           {criterion.number}
         </button>
-
         {isOpen && (
           <>
-            {/* 背景レイヤー：スマホのみ有効 */}
             <div
               className="fixed inset-0 z-[110] md:hidden bg-black/10"
               onClick={closeTooltip}
             />
-
             <div
-              className={`
-                /* 基本スタイル */
-                p-6 bg-slate-800 text-white leading-relaxed rounded-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 z-[120]
-                
-                /* 【スマホ】画面の完全中央に配置 */
-                fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[320px] text-[13px]
-                
-                /* 【PC】マウスホバー時はボタンのすぐ上に表示 */
-                md:absolute md:top-auto md:bottom-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-0 md:mb-3 md:w-64 md:p-4 md:text-[11px]
-              `}
+              className="p-6 bg-slate-800 text-white leading-relaxed rounded-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 z-[120] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[320px] text-[13px] md:absolute md:top-auto md:bottom-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-0 md:mb-3 md:w-64 md:p-4 md:text-[11px]"
               onClick={(e) => e.stopPropagation()}
             >
               <p className="font-bold border-b border-slate-600 mb-3 pb-2 text-blue-300 text-sm flex items-center gap-2">
                 <Info size={16} className="md:w-3 md:h-3" /> 登録基準{" "}
                 {criterion.number}
               </p>
-
               <div className="space-y-2">
                 <p className="font-bold text-slate-100 text-sm md:text-[12px]">
                   {criterion.short_name}
@@ -155,8 +170,6 @@ export default function HeritageListPage() {
                   {criterion.description}
                 </p>
               </div>
-
-              {/* 閉じるボタン */}
               <button
                 onClick={closeTooltip}
                 className="absolute top-4 right-4 p-1.5 text-slate-400 bg-slate-700/50 rounded-full hover:text-white md:hidden"
@@ -182,7 +195,6 @@ export default function HeritageListPage() {
       2: { label: "自然", color: "#008a33" },
       3: { label: "複合", color: "#de00cb" },
     }[category] || { label: "不明", color: "#64748b" };
-
     return (
       <span
         style={{ backgroundColor: config.color }}
@@ -198,7 +210,7 @@ export default function HeritageListPage() {
       <div className="max-w-7xl mx-auto px-6 py-10">
         <h1 className="text-main-title font-bold">世界遺産データベース</h1>
 
-        {/* 検索・フィルター */}
+        {/* 検索・フィルターフォーム */}
         <form
           onSubmit={handleSearch}
           className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 flex flex-wrap gap-4 items-end"
@@ -224,11 +236,8 @@ export default function HeritageListPage() {
               カテゴリー
             </label>
             <select
-              value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              value={queryCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none"
             >
               <option value="0">すべて</option>
@@ -253,7 +262,7 @@ export default function HeritageListPage() {
 
         <p className="text-sm text-slate-500 mb-6">
           全 {totalCount} 件中 {heritages.length} 件を表示中
-          {totalPages > 1 && ` (ページ ${currentPage} / ${totalPages})`}
+          {totalPages > 1 && ` (ページ ${queryPage} / ${totalPages})`}
         </p>
 
         {/* カード一覧 */}
@@ -263,37 +272,24 @@ export default function HeritageListPage() {
               <div
                 key={h.id}
                 onClick={() => setSelectedHeritage(h)}
-                className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-slate-100 group flex flex-col"
+                className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-slate-100 group flex flex-col cursor-pointer"
               >
                 <div className="relative h-32 md:h-56 bg-slate-200">
                   <Image
                     src={h.image_url || ""}
-                    alt={""}
+                    alt={h.name}
                     fill
                     unoptimized
                     className="object-cover"
-                    loading="lazy"
                     sizes="(max-width: 768px) 50vw, 33vw"
                   />
-                  <div
-                    className={`
-                      absolute bottom-1 right-1 md:bottom-2 md:right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded-md z-20
-                      
-                      /* 【スマホ】表示しない、クリック無効 */
-                      hidden
-                      
-                      /* 【PC】常時表示、クリック有効 */
-                      md:flex md:opacity-100 md:pointer-events-auto
-                    `}
-                  >
+                  <div className="hidden md:flex absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded-md z-20">
                     <a
                       href={h.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[7px] md:text-[9px] text-white flex items-center gap-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
+                      className="text-[9px] text-white flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       出典：{h.source_name || "unknown"}{" "}
                       <ExternalLink className="w-2 h-2" />
@@ -302,30 +298,22 @@ export default function HeritageListPage() {
                 </div>
 
                 <div className="p-3 md:p-6 flex flex-col flex-1">
-                  {/* タイトルのフォントサイズを調整 (text-sm md:text-xl) */}
                   <h2 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3 group-hover:text-blue-600 transition leading-tight line-clamp-2 md:min-h-[3.5rem]">
                     {h.name}
                   </h2>
-
                   <div className="flex items-center gap-1.5 md:gap-3 text-[9px] md:text-xs text-slate-500 mb-2 md:mb-4 flex-wrap">
-                    {/* カテゴリバッジ */}
                     <CategoryBadge
                       category={h.category}
                       className="text-[10px] md:text-xs uppercase tracking-wider"
                     />
-
-                    {/* 登録年 */}
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" />{" "}
                       {h.registered_year}
                     </div>
-
-                    {/* 所在国 */}
                     {h.countries && h.countries.length > 0 && (
                       <div className="flex items-center gap-1 min-w-0">
                         <Globe className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" />
                         <span className="truncate">
-                          {/* 2ヶ国まで表示し、3ヶ国目以降は +n とする */}
                           {h.countries.slice(0, 2).join(", ")}
                           {h.countries.length > 2 &&
                             ` +${h.countries.length - 2}`}
@@ -333,11 +321,9 @@ export default function HeritageListPage() {
                       </div>
                     )}
                   </div>
-
                   <p className="hidden md:block text-sm text-slate-500 line-clamp-2 leading-relaxed italic mb-6">
                     {h.catchphrase}
                   </p>
-
                   <button
                     onClick={(e) => handleQuizClick(e, h.code)}
                     className="mt-auto w-full py-2 md:py-2.5 bg-blue-50 text-blue-600 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold flex items-center justify-center gap-1 md:gap-2 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 active:scale-[0.98]"
@@ -365,7 +351,7 @@ export default function HeritageListPage() {
         {totalPages > 1 && (
           <div className="mt-12 pb-10">
             <Pagination
-              currentPage={currentPage}
+              currentPage={queryPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
               loading={loading}
@@ -380,7 +366,7 @@ export default function HeritageListPage() {
         heritageCode={selectedQuizHeritageCode}
       />
 
-      {/* 世界遺産（詳細） */}
+      {/* 詳細モーダル */}
       {selectedHeritage && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
@@ -396,18 +382,14 @@ export default function HeritageListPage() {
             >
               <X className="w-5 h-5 text-slate-600" />
             </button>
-
-            {/* モーダル内コンテンツ */}
             <div className="overflow-y-auto">
               <div className="relative h-64 md:h-[450px]">
                 <Image
-                  src={selectedHeritage.image_url || "/images/no-image.jpg"}
+                  src={selectedHeritage.image_url || ""}
                   alt={selectedHeritage.name}
                   fill
                   unoptimized
                   className="object-cover"
-                  loading="lazy"
-                  sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl opacity-100 transition-opacity duration-300">
                   <a
@@ -431,50 +413,41 @@ export default function HeritageListPage() {
                   category={selectedHeritage.category}
                   className="text-[10px] md:text-xs uppercase tracking-wider mt-1.5"
                 />
-                <div className="space-y-4 text-slate-600 leading-relaxed">
-                  <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100">
-                    <div>
-                      <span className="text-xs font-bold text-slate-400 block uppercase">
-                        登録年
-                      </span>
-                      <span className="font-medium">
-                        {selectedHeritage.registered_year}年
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-400 block uppercase">
-                        所在国
-                      </span>
-                      <span
-                        className="font-medium truncate block"
-                        title={selectedHeritage.countries?.join(", ")}
-                      >
-                        {selectedHeritage.countries?.join(", ")}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-400 block uppercase">
-                        登録基準
-                      </span>
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {selectedHeritage.criteria &&
-                        selectedHeritage.criteria.length > 0 ? (
-                          selectedHeritage.criteria.map((c: number, idx) => (
-                            <CriterionTooltip key={idx} criterion={c} />
-                          ))
-                        ) : (
-                          <span className="text-sm text-slate-400 italic">
-                            未設定
-                          </span>
-                        )}
-                      </div>
+                <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100 my-4">
+                  <div>
+                    <span className="text-xs font-bold text-slate-400 block uppercase">
+                      登録年
+                    </span>
+                    <span className="font-medium">
+                      {selectedHeritage.registered_year}年
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-400 block uppercase">
+                      所在国
+                    </span>
+                    <span
+                      className="font-medium truncate block"
+                      title={selectedHeritage.countries?.join(", ")}
+                    >
+                      {selectedHeritage.countries?.join(", ")}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-400 block uppercase">
+                      登録基準
+                    </span>
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {selectedHeritage.criteria?.map((c: any, idx: number) => (
+                        <CriterionTooltip key={idx} criterion={c} />
+                      ))}
                     </div>
                   </div>
-                  <div className="prose prose-slate max-w-none dark:prose-invert">
-                    <ReactMarkdown>
-                      {selectedHeritage.description || "詳細情報はありません。"}
-                    </ReactMarkdown>
-                  </div>
+                </div>
+                <div className="prose prose-slate max-w-none">
+                  <ReactMarkdown>
+                    {selectedHeritage.description || "詳細情報はありません。"}
+                  </ReactMarkdown>
                 </div>
               </div>
             </div>

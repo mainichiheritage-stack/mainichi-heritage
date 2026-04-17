@@ -21,6 +21,22 @@ export default function QuizSettingsModal({
 
   if (!isOpen) return null;
 
+  const handleStart = () => {
+    // 現在の場所（パス + クエリ）を取得
+    const currentPath = window.location.pathname + window.location.search;
+
+    // 遷移先URLを構築
+    const params = new URLSearchParams({
+      count: questionCount,
+      level: level,
+      heritageCode: heritageCode,
+      from: currentPath,
+    });
+
+    onClose();
+    router.push(`/quiz?${params.toString()}`);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -41,6 +57,7 @@ export default function QuizSettingsModal({
             <X className="w-6 h-6" />
           </button>
         </div>
+
         <div className="px-8 pb-8 space-y-6">
           {/* 問題数選択 */}
           <section>
@@ -147,12 +164,7 @@ export default function QuizSettingsModal({
               キャンセル
             </button>
             <button
-              onClick={() => {
-                onClose();
-                router.push(
-                  `/quiz?count=${questionCount}&level=${level}&heritageCode=${heritageCode}`,
-                );
-              }}
+              onClick={handleStart}
               className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-slate-950 hover:bg-slate-800 transition"
             >
               スタート
