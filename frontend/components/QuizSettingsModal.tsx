@@ -149,8 +149,6 @@ export default function QuizSettingsModal({
             <button
               onClick={() => {
                 onClose();
-                console.log("■パラメータ確認");
-                console.log({ questionCount, level, heritageCode });
                 router.push(
                   `/quiz?count=${questionCount}&level=${level}&heritageCode=${heritageCode}`,
                 );

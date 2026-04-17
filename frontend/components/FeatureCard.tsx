@@ -20,12 +20,11 @@ export function FeatureCard({
     <div
       className={`
       relative 
-      /* スマホでは p-4、PC（md以上）では p-6 に可変 */
       p-4 md:p-6 
-      rounded-2xl border transition-all duration-200 h-full flex flex-col
+      rounded-2xl border transition-all duration-300 h-full flex flex-col group
       ${
         isAvailable
-          ? "bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 cursor-pointer"
+          ? "bg-white border-slate-100 shadow-sm hover:shadow-lg hover:shadow-blue-500/5 hover:border-blue-400 hover:bg-blue-50/30 cursor-pointer active:scale-[0.98]"
           : "bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed"
       }
     `}
@@ -36,24 +35,31 @@ export function FeatureCard({
         </span>
       )}
 
-      {/* アイコンサイズもスマホでは小さく (w-10)、PCでは大きく (md:w-12) */}
       <div
-        className={`w-10 h-10 md:w-12 md:h-12 ${iconBg} rounded-xl flex items-center justify-center mb-3 md:mb-4 shrink-0`}
+        className={`w-10 h-10 md:w-12 md:h-12 ${iconBg} rounded-xl flex items-center justify-center mb-3 md:mb-4 shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}
       >
-        {/* アイコン自体も少し縮小 */}
         <div className="scale-90 md:scale-100">{icon}</div>
       </div>
 
       <div className="flex-1">
-        {/* タイトル：スマホでは文字サイズを落とし、1行に収める工夫 */}
         <h3
-          className={`font-bold text-sm md:text-base mb-1 md:mb-2 leading-tight ${isAvailable ? "text-slate-900" : "text-slate-500"}`}
+          className={`font-bold text-sm md:text-base mb-1 md:mb-2 leading-tight transition-colors duration-300 ${
+            isAvailable
+              ? "text-slate-900 group-hover:text-blue-600"
+              : "text-slate-500"
+          }`}
         >
           {title}
         </h3>
 
-        {/* 説明文：スマホ（2列時）では非表示にするか、極めて小さく表示する */}
-        <p className="hidden md:block text-xs md:text-sm text-slate-400 leading-relaxed line-clamp-2">
+        {/* 説明文 */}
+        <p
+          className={`hidden md:block text-xs md:text-sm leading-relaxed line-clamp-2 transition-colors duration-300 ${
+            isAvailable
+              ? "text-slate-500 group-hover:text-blue-500/80"
+              : "text-slate-400"
+          }`}
+        >
           {desc}
         </p>
       </div>
