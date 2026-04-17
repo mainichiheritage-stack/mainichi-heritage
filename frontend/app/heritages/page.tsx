@@ -11,6 +11,7 @@ import {
   X,
   Info,
   PlayCircle,
+  Globe,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
@@ -169,12 +170,33 @@ export default function HeritageListPage() {
     );
   };
 
+  const CategoryBadge = ({
+    category,
+    className = "",
+  }: {
+    category: number;
+    className?: string;
+  }) => {
+    const config = {
+      1: { label: "文化", color: "#af6700" },
+      2: { label: "自然", color: "#008a33" },
+      3: { label: "複合", color: "#de00cb" },
+    }[category] || { label: "不明", color: "#64748b" };
+
+    return (
+      <span
+        style={{ backgroundColor: config.color }}
+        className={`text-white font-bold px-2 py-0.5 rounded shadow-sm shrink-0 ${className}`}
+      >
+        {config.label}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold mb-8 text-slate-800">
-          世界遺産データベース
-        </h1>
+        <h1 className="text-main-title font-bold">世界遺産データベース</h1>
 
         {/* 検索・フィルター */}
         <form
@@ -286,27 +308,30 @@ export default function HeritageListPage() {
                   </h2>
 
                   <div className="flex items-center gap-1.5 md:gap-3 text-[9px] md:text-xs text-slate-500 mb-2 md:mb-4 flex-wrap">
-                    <span
-                      style={{
-                        backgroundColor:
-                          h.category === 1
-                            ? "#af6700"
-                            : h.category === 2
-                              ? "#008a33"
-                              : "#de00cb",
-                      }}
-                      className="text-white font-bold px-1.5 py-0.5 md:px-2.5 md:py-1 rounded shadow-sm scale-90 md:scale-100 origin-left"
-                    >
-                      {h.category === 1
-                        ? "文化"
-                        : h.category === 2
-                          ? "自然"
-                          : "複合"}
-                    </span>
+                    {/* カテゴリバッジ */}
+                    <CategoryBadge
+                      category={h.category}
+                      className="text-[10px] md:text-xs uppercase tracking-wider"
+                    />
+
+                    {/* 登録年 */}
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" />{" "}
                       {h.registered_year}
                     </div>
+
+                    {/* 所在国 */}
+                    {h.countries && h.countries.length > 0 && (
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Globe className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" />
+                        <span className="truncate">
+                          {/* 2ヶ国まで表示し、3ヶ国目以降は +n とする */}
+                          {h.countries.slice(0, 2).join(", ")}
+                          {h.countries.length > 2 &&
+                            ` +${h.countries.length - 2}`}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <p className="hidden md:block text-sm text-slate-500 line-clamp-2 leading-relaxed italic mb-6">
@@ -361,21 +386,20 @@ export default function HeritageListPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setSelectedHeritage(null)}
         >
-          {selectedHeritage.code}
           <div
-            className="bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col"
+            className="bg-white w-full max-w-4xl h-full max-h-[95vh] rounded-3xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedHeritage(null)}
-              className="absolute top-4 right-4 z-10 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
+              className="absolute top-5 right-5 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-all active:scale-95"
             >
               <X className="w-5 h-5 text-slate-600" />
             </button>
 
             {/* モーダル内コンテンツ */}
             <div className="overflow-y-auto">
-              <div className="relative h-56 md:h-80">
+              <div className="relative h-64 md:h-[450px]">
                 <Image
                   src={selectedHeritage.image_url || "/images/no-image.jpg"}
                   alt={selectedHeritage.name}
@@ -403,6 +427,10 @@ export default function HeritageListPage() {
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">
                   {selectedHeritage.name}
                 </h2>
+                <CategoryBadge
+                  category={selectedHeritage.category}
+                  className="text-[10px] md:text-xs uppercase tracking-wider mt-1.5"
+                />
                 <div className="space-y-4 text-slate-600 leading-relaxed">
                   <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100">
                     <div>

@@ -239,7 +239,7 @@ export default function AboutExamPage() {
         {/* 誘導 */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 pt-8">
           <Link
-            href="/about-heritage"
+            href="/basic"
             className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 group"
           >
             <BookOpen className="w-5 h-5" />

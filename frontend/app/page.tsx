@@ -95,12 +95,12 @@ export default function Home() {
                 />
               </Link>
               <Link
-                href="/about-heritage"
+                href="/basic"
                 className="block active:scale-[0.98] transition-transform"
               >
                 <FeatureCard
                   icon={<Globe className="text-emerald-500" />}
-                  title="世界遺産とは"
+                  title="世界遺産の基礎知識"
                   desc="定義や登録基準を学ぶ"
                   iconBg="bg-emerald-100"
                 />
