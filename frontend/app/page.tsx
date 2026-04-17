@@ -100,8 +100,8 @@ export default function Home() {
               >
                 <FeatureCard
                   icon={<Globe className="text-emerald-500" />}
-                  title="世界遺産の基礎知識"
-                  desc="定義や登録基準を学ぶ"
+                  title="基礎知識"
+                  desc="世界遺産に関連する基礎知識を学ぶ"
                   iconBg="bg-emerald-100"
                 />
               </Link>
@@ -111,8 +111,8 @@ export default function Home() {
               >
                 <FeatureCard
                   icon={<BookOpen className="text-blue-500" />}
-                  title="データベース"
-                  desc="世界遺産を地域別に閲覧"
+                  title="世界遺産一覧"
+                  desc="画像付きで世界遺産を学ぶ"
                   iconBg="bg-blue-100"
                 />
               </Link>
@@ -123,7 +123,7 @@ export default function Home() {
                 <FeatureCard
                   icon={<BrainCircuit className="text-green-500" />}
                   title="4択クイズ"
-                  desc="楽しく知識を定着"
+                  desc="世界遺産検定レベルの問題で、楽しく知識を定着"
                   iconBg="bg-green-100"
                 />
               </div>
