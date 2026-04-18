@@ -79,6 +79,11 @@ class Heritage(models.Model):
         null=True, 
         verbose_name="危機遺産登録年"
     )
+    is_negative_heritage = models.BooleanField(
+        default=False, 
+        verbose_name="負の遺産フラグ",
+        help_text="戦争、人種差別、奴隷貿易など人類の悲劇を象徴する遺産"
+    )
     countries = models.ManyToManyField(Country, related_name="heritages", verbose_name="所在国")
     level = models.IntegerField(choices=LEVEL_CHOICES, default=2, verbose_name="対象級")
     criteria = models.ManyToManyField(

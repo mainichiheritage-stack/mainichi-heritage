@@ -14,6 +14,7 @@ import {
   PlayCircle,
   Globe,
   AlertTriangle,
+  AlertCircle,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
@@ -324,6 +325,14 @@ export default function HeritageListPage() {
                       </div>
                     )}
 
+                    {/* 負の遺産表示 */}
+                    {h.is_negative_heritage && (
+                      <div className="flex items-center gap-1 text-slate-600 font-bold bg-slate-200 px-1.5 py-0.5 rounded">
+                        <AlertCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                        <span>負の遺産</span>
+                      </div>
+                    )}
+
                     {/* 所在国 */}
                     {h.countries && h.countries.length > 0 && (
                       <div className="flex items-center gap-1 min-w-0">
@@ -435,6 +444,12 @@ export default function HeritageListPage() {
                       危機遺産リストに登録中 (
                       {selectedHeritage.danger_registered_year}年〜)
                     </span>
+                  </div>
+                )}
+                {selectedHeritage.is_negative_heritage && (
+                  <div className="flex items-center gap-1 text-slate-600 font-bold bg-slate-200 px-1.5 py-0.5 rounded">
+                    <AlertCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                    <span>負の遺産</span>
                   </div>
                 )}
                 <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100 my-4">

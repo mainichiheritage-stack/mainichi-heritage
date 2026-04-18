@@ -21,7 +21,8 @@ class HeritageAdmin(admin.ModelAdmin):
         'level',
         'registered_year', 
         'is_danger',
-        'danger_registered_year'
+        'danger_registered_year',
+        'is_negative_heritage',
     )
     filter_horizontal = ('countries', 'criteria')
     list_filter = ('category', 'level', 'is_danger', 'registered_year')

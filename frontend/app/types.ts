@@ -23,6 +23,7 @@ export interface Heritage {
   criteria: number[];
   is_danger: boolean;
   danger_registered_year?: number;
+  is_negative_heritage: boolean;
 
   image_url: string | null;
   source_name?: string;
