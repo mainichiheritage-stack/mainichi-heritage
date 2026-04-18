@@ -13,6 +13,7 @@ import {
   Info,
   PlayCircle,
   Globe,
+  AlertTriangle,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
@@ -298,18 +299,32 @@ export default function HeritageListPage() {
                 </div>
 
                 <div className="p-3 md:p-6 flex flex-col flex-1">
+                  {/* 世界遺産名 */}
                   <h2 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3 group-hover:text-blue-600 transition leading-tight line-clamp-2 md:min-h-[3.5rem]">
                     {h.name}
                   </h2>
                   <div className="flex items-center gap-1.5 md:gap-3 text-[9px] md:text-xs text-slate-500 mb-2 md:mb-4 flex-wrap">
+                    {/* 遺産種別 */}
                     <CategoryBadge
                       category={h.category}
                       className="text-[10px] md:text-xs uppercase tracking-wider"
                     />
+
+                    {/* 登録年 */}
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" />{" "}
                       {h.registered_year}
                     </div>
+
+                    {/* 危機遺産表示 */}
+                    {h.is_danger && (
+                      <div className="flex items-center gap-1 text-red-500 font-bold bg-red-50 px-1.5 py-0.5 rounded">
+                        <AlertTriangle className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                        <span>危機遺産 ({h.danger_registered_year}〜)</span>
+                      </div>
+                    )}
+
+                    {/* 所在国 */}
                     {h.countries && h.countries.length > 0 && (
                       <div className="flex items-center gap-1 min-w-0">
                         <Globe className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" />
@@ -413,6 +428,15 @@ export default function HeritageListPage() {
                   category={selectedHeritage.category}
                   className="text-[10px] md:text-xs uppercase tracking-wider mt-1.5"
                 />
+                {selectedHeritage.is_danger && (
+                  <div className="flex items-center gap-1.5 text-red-600 font-bold text-[11px] md:text-sm bg-red-50 border border-red-100 px-3 py-1 rounded-full animate-pulse-subtle">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>
+                      危機遺産リストに登録中 (
+                      {selectedHeritage.danger_registered_year}年〜)
+                    </span>
+                  </div>
+                )}
                 <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100 my-4">
                   <div>
                     <span className="text-xs font-bold text-slate-400 block uppercase">

@@ -74,6 +74,11 @@ class Heritage(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name="説明")
     registered_year = models.IntegerField(verbose_name="登録年")
     is_danger = models.BooleanField(default=False, verbose_name="危機遺産フラグ")
+    danger_registered_year = models.IntegerField(
+        blank=True, 
+        null=True, 
+        verbose_name="危機遺産登録年"
+    )
     countries = models.ManyToManyField(Country, related_name="heritages", verbose_name="所在国")
     level = models.IntegerField(choices=LEVEL_CHOICES, default=2, verbose_name="対象級")
     criteria = models.ManyToManyField(

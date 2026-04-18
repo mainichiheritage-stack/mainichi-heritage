@@ -21,6 +21,8 @@ export interface Heritage {
   catchphrase: string;
   description: string;
   criteria: number[];
+  is_danger: boolean;
+  danger_registered_year?: number;
 
   image_url: string | null;
   source_name?: string;
