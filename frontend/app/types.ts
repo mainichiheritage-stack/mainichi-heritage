@@ -21,9 +21,11 @@ export interface Heritage {
   catchphrase: string;
   description: string;
   criteria: number[];
+
   is_danger: boolean;
   danger_registered_year?: number;
   is_negative_heritage: boolean;
+  is_cultural_landscape: boolean;
 
   image_url: string | null;
   source_name?: string;

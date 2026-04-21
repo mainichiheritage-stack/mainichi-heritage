@@ -73,24 +73,15 @@ class Heritage(models.Model):
     catchphrase = models.CharField(max_length=255,blank=True, null=True,verbose_name="キャッチフレーズ")
     description = models.TextField(blank=True, null=True, verbose_name="説明")
     registered_year = models.IntegerField(verbose_name="登録年")
-    is_danger = models.BooleanField(default=False, verbose_name="危機遺産フラグ")
-    danger_registered_year = models.IntegerField(
-        blank=True, 
-        null=True, 
-        verbose_name="危機遺産登録年"
-    )
-    is_negative_heritage = models.BooleanField(
-        default=False, 
-        verbose_name="負の遺産フラグ",
-        help_text="戦争、人種差別、奴隷貿易など人類の悲劇を象徴する遺産"
-    )
     countries = models.ManyToManyField(Country, related_name="heritages", verbose_name="所在国")
     level = models.IntegerField(choices=LEVEL_CHOICES, default=2, verbose_name="対象級")
-    criteria = models.ManyToManyField(
-        Criterion, 
-        related_name="heritages", 
-        verbose_name="登録基準"
-    )
+    criteria = models.ManyToManyField(Criterion, related_name="heritages", verbose_name="登録基準")
+
+    # ジャンル
+    is_danger = models.BooleanField(default=False, verbose_name="危機遺産フラグ")
+    danger_registered_year = models.IntegerField(blank=True, null=True, verbose_name="危機遺産登録年")
+    is_negative_heritage = models.BooleanField(default=False, verbose_name="負の遺産フラグ")
+    is_cultural_landscape = models.BooleanField(default=False, verbose_name="文化的景観フラグ",)
 
     # 画像関連
     image_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="画像URL")

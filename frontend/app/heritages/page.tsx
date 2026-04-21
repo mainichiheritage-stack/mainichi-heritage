@@ -15,6 +15,7 @@ import {
   Globe,
   AlertTriangle,
   AlertCircle,
+  Leaf,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
@@ -293,7 +294,7 @@ export default function HeritageListPage() {
                       className="text-[9px] text-white flex items-center gap-1"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      出典：{h.source_name || "unknown"}{" "}
+                      出典：{h.source_name || "unknown"}（加工あり）
                       <ExternalLink className="w-2 h-2" />
                     </a>
                   </div>
@@ -317,6 +318,18 @@ export default function HeritageListPage() {
                       {h.registered_year}
                     </div>
 
+                    {/* 所在国 */}
+                    {h.countries && h.countries.length > 0 && (
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Globe className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" />
+                        <span className="truncate">
+                          {h.countries.slice(0, 2).join(", ")}
+                          {h.countries.length > 2 &&
+                            ` +${h.countries.length - 2}`}
+                        </span>
+                      </div>
+                    )}
+
                     {/* 危機遺産表示 */}
                     {h.is_danger && (
                       <div className="flex items-center gap-1 text-red-500 font-bold bg-red-50 px-1.5 py-0.5 rounded">
@@ -333,15 +346,11 @@ export default function HeritageListPage() {
                       </div>
                     )}
 
-                    {/* 所在国 */}
-                    {h.countries && h.countries.length > 0 && (
-                      <div className="flex items-center gap-1 min-w-0">
-                        <Globe className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" />
-                        <span className="truncate">
-                          {h.countries.slice(0, 2).join(", ")}
-                          {h.countries.length > 2 &&
-                            ` +${h.countries.length - 2}`}
-                        </span>
+                    {/* 文化的景観表示 */}
+                    {h.is_cultural_landscape && (
+                      <div className="flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                        <Leaf className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                        <span>文化的景観</span>
                       </div>
                     )}
                   </div>
@@ -423,20 +432,26 @@ export default function HeritageListPage() {
                     className="text-[10px] text-white flex items-center gap-1.5 hover:text-blue-200"
                   >
                     <span className="font-medium">
-                      出典: {selectedHeritage.source_name || "Wikipedia"}
+                      出典: {selectedHeritage.source_name || "unknown"}
+                      （加工あり）
                     </span>
                     <ExternalLink className="w-3 h-3 opacity-70" />
                   </a>
                 </div>
               </div>
               <div className="p-6 md:p-8">
+                {/* 世界遺産名 */}
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">
                   {selectedHeritage.name}
                 </h2>
+
+                {/* カテゴリ */}
                 <CategoryBadge
                   category={selectedHeritage.category}
                   className="text-[10px] md:text-xs uppercase tracking-wider mt-1.5"
                 />
+
+                {/* 危機遺産 */}
                 {selectedHeritage.is_danger && (
                   <div className="flex items-center gap-1.5 text-red-600 font-bold text-[11px] md:text-sm bg-red-50 border border-red-100 px-3 py-1 rounded-full animate-pulse-subtle">
                     <AlertTriangle className="w-3.5 h-3.5" />
@@ -446,13 +461,24 @@ export default function HeritageListPage() {
                     </span>
                   </div>
                 )}
+
+                {/* 負の遺産 */}
                 {selectedHeritage.is_negative_heritage && (
                   <div className="flex items-center gap-1 text-slate-600 font-bold bg-slate-200 px-1.5 py-0.5 rounded">
                     <AlertCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />
                     <span>負の遺産</span>
                   </div>
                 )}
+
+                {/* 文化的景観 */}
+                {selectedHeritage.is_cultural_landscape && (
+                  <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px] md:text-sm bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
+                    <Leaf className="w-3.5 h-3.5" />
+                    <span>文化的景観</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100 my-4">
+                  {/* 登録年 */}
                   <div>
                     <span className="text-xs font-bold text-slate-400 block uppercase">
                       登録年
@@ -461,6 +487,8 @@ export default function HeritageListPage() {
                       {selectedHeritage.registered_year}年
                     </span>
                   </div>
+
+                  {/* 所在国 */}
                   <div>
                     <span className="text-xs font-bold text-slate-400 block uppercase">
                       所在国
@@ -472,6 +500,8 @@ export default function HeritageListPage() {
                       {selectedHeritage.countries?.join(", ")}
                     </span>
                   </div>
+
+                  {/* 登録基準 */}
                   <div>
                     <span className="text-xs font-bold text-slate-400 block uppercase">
                       登録基準
