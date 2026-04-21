@@ -11,6 +11,7 @@ import { DangerSection } from "./_components/DangerSection";
 import { NegativeSection } from "./_components/NegativeSection";
 import { IntangibleSection } from "./_components/IntangibleSection";
 import { ReligionSection } from "./_components/ReligionSection";
+import { CulturalLandscapeSection } from "./_components/CulturalLandscapeSection";
 
 const subscribe = () => () => {};
 
@@ -41,6 +42,7 @@ export default function WhatIsWorldHeritagePage() {
     { id: "criteria", title: "10の登録基準" },
     { id: "danger", title: "危機遺産" },
     { id: "negative", title: "負の遺産（記憶の場）" },
+    { id: "cultural-landscape", title: "文化的景観" },
     { id: "intangible", title: "無形遺産・世界の記憶" },
     { id: "religion", title: "世界三大宗教" },
   ];
@@ -85,8 +87,9 @@ export default function WhatIsWorldHeritagePage() {
           <CriteriaSection title={sections[4].title} />
           <DangerSection title={sections[5].title} />
           <NegativeSection title={sections[6].title} />
-          <IntangibleSection title={sections[7].title} />
-          <ReligionSection title={sections[8].title} />
+          <CulturalLandscapeSection title={sections[7].title} />
+          <IntangibleSection title={sections[8].title} />
+          <ReligionSection title={sections[9].title} />
         </main>
       </div>
 
