@@ -21,7 +21,7 @@ import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
 import { Pagination } from "../../components/Pagination";
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 12;
 
 export default function HeritageListPage() {
   const router = useRouter();
