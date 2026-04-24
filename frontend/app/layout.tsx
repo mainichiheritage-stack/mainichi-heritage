@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   description:
     "世界遺産検定の合格を目指すための勉強サービス。毎日手軽に世界遺産の知識と世界を広げましょう。",
   keywords: ["世界遺産検定", "世界遺産", "クイズ", "勉強アプリ"],
+  metadataBase: new URL("https://mainichi-heritage.com"),
   icons: {
     icon: [
       { url: "/images/landmark.svg", type: "image/svg+xml" },
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "まいにち世界遺産",
     description: "世界遺産検定合格への最短ルート！クイズで楽しく学習。",
-    url: "https://mainichi-heritage.vercel.app/",
+    url: "https://mainichi-heritage.com/",
     siteName: "まいにち世界遺産",
     locale: "ja_JP",
     type: "website",
