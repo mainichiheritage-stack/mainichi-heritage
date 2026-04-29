@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react"; // Suspenseを追加
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Heritage, Criterion } from "../types";
@@ -23,7 +23,7 @@ import { Pagination } from "../../components/Pagination";
 
 const ITEMS_PER_PAGE = 12;
 
-export default function HeritageListPage() {
+function HeritageListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -37,7 +37,7 @@ export default function HeritageListPage() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
-  // 入力中のテキスト（検索ボタン押下で確定）
+  // 入力中のテキスト
   const [inputText, setInputText] = useState(querySearch);
 
   const [selectedHeritage, setSelectedHeritage] = useState<Heritage | null>(
@@ -84,7 +84,6 @@ export default function HeritageListPage() {
     if (updates.category !== undefined)
       params.set("category", updates.category);
 
-    // 条件が変わった場合は1ページ目へ、ページ変更のみの場合はそのページへ
     if (updates.page !== undefined) {
       params.set("page", updates.page.toString());
     } else {
@@ -117,7 +116,7 @@ export default function HeritageListPage() {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  // --- サブコンポーネント ---
+  // --- サブコンポーネント (ツールチップなど) ---
   const CriterionTooltip = ({
     criterion,
   }: {
@@ -473,7 +472,7 @@ export default function HeritageListPage() {
 
                 {/* 危機遺産 */}
                 {selectedHeritage.is_danger && (
-                  <div className="flex items-center gap-1.5 text-red-600 font-bold text-[11px] md:text-sm bg-red-50 border border-red-100 px-3 py-1 rounded-full animate-pulse-subtle">
+                  <div className="flex items-center gap-1.5 text-red-600 font-bold text-[11px] md:text-sm bg-red-50 border border-red-100 px-3 py-1 rounded-full">
                     <AlertTriangle className="w-3.5 h-3.5" />
                     <span>
                       危機遺産リストに登録中 (
@@ -544,5 +543,18 @@ export default function HeritageListPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// --- エクスポートされるデフォルトコンポーネント ---
+export default function HeritageListPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-10 text-center text-slate-500">読み込み中...</div>
+      }
+    >
+      <HeritageListContent />
+    </Suspense>
   );
 }
