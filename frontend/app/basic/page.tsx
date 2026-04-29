@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState, useEffect, useSyncExternalStore, useMemo } from "react";
 import { List, ChevronRight, X } from "lucide-react";
 import { AboutSection } from "./_components/AboutSection";
 import { TypesSection } from "./_components/TypesSection";
@@ -16,8 +16,10 @@ import { CulturalLandscapeSection } from "./_components/CulturalLandscapeSection
 const subscribe = () => () => {};
 
 export default function WhatIsWorldHeritagePage() {
+  const [activeId, setActiveId] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -26,6 +28,45 @@ export default function WhatIsWorldHeritagePage() {
     }, 350);
   };
 
+  const sections = useMemo(
+    () => [
+      { id: "about", title: "世界遺産とは" },
+      { id: "types", title: "遺産の種類（文化・自然・複合）" },
+      { id: "convention", title: "世界遺産条約の理念" },
+      { id: "process", title: "登録までのプロセス" },
+      { id: "criteria", title: "10の登録基準" },
+      { id: "danger", title: "危機遺産" },
+      { id: "negative", title: "負の遺産（記憶の場）" },
+      { id: "cultural-landscape", title: "文化的景観" },
+      { id: "intangible", title: "無形遺産・世界の記憶" },
+      { id: "religion", title: "世界三大宗教" },
+    ],
+    [],
+  );
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      {
+        // 画面の真ん中より少し上で検知するように調整
+        rootMargin: "-20% 0px -70% 0px",
+      },
+    );
+
+    sections.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [sections]);
+
   // ハイドレーションエラー防止
   const isClient = useSyncExternalStore(
     subscribe,
@@ -33,19 +74,6 @@ export default function WhatIsWorldHeritagePage() {
     () => false, // サーバー側での値
   );
   if (!isClient) return null;
-
-  const sections = [
-    { id: "about", title: "世界遺産とは" },
-    { id: "types", title: "遺産の種類（文化・自然・複合）" },
-    { id: "convention", title: "世界遺産条約の理念" },
-    { id: "process", title: "登録までのプロセス" },
-    { id: "criteria", title: "10の登録基準" },
-    { id: "danger", title: "危機遺産" },
-    { id: "negative", title: "負の遺産（記憶の場）" },
-    { id: "cultural-landscape", title: "文化的景観" },
-    { id: "intangible", title: "無形遺産・世界の記憶" },
-    { id: "religion", title: "世界三大宗教" },
-  ];
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -69,7 +97,11 @@ export default function WhatIsWorldHeritagePage() {
                 <a
                   key={s.id}
                   href={`#${s.id}`}
-                  className="px-4 py-2 text-sm text-slate-500 hover:text-indigo-600 font-bold transition-all"
+                  className={`px-4 py-2 text-sm transition-all font-bold border-l-2 -ml-[2px] ${
+                    activeId === s.id
+                      ? "text-indigo-600 border-indigo-600 bg-indigo-50/50" // アクティブ時
+                      : "text-slate-500 border-transparent hover:text-indigo-600" // 通常時
+                  }`}
                 >
                   {s.title}
                 </a>
@@ -80,16 +112,36 @@ export default function WhatIsWorldHeritagePage() {
 
         {/* --- コンテンツ --- */}
         <main className="flex-1 space-y-28">
-          <AboutSection title={sections[0].title} />
-          <TypesSection title={sections[1].title} />
-          <ConventionSection title={sections[2].title} />
-          <ProcessSection title={sections[3].title} />
-          <CriteriaSection title={sections[4].title} />
-          <DangerSection title={sections[5].title} />
-          <NegativeSection title={sections[6].title} />
-          <CulturalLandscapeSection title={sections[7].title} />
-          <IntangibleSection title={sections[8].title} />
-          <ReligionSection title={sections[9].title} />
+          <div id="about">
+            <AboutSection title={sections[0].title} />
+          </div>
+          <div id="types">
+            <TypesSection title={sections[1].title} />
+          </div>
+          <div id="convention">
+            <ConventionSection title={sections[2].title} />
+          </div>
+          <div id="process">
+            <ProcessSection title={sections[3].title} />
+          </div>
+          <div id="criteria">
+            <CriteriaSection title={sections[4].title} />
+          </div>
+          <div id="danger">
+            <DangerSection title={sections[5].title} />
+          </div>
+          <div id="negative">
+            <NegativeSection title={sections[6].title} />
+          </div>
+          <div id="cultural-landscape">
+            <CulturalLandscapeSection title={sections[7].title} />
+          </div>
+          <div id="intangible">
+            <IntangibleSection title={sections[8].title} />
+          </div>
+          <div id="religion">
+            <ReligionSection title={sections[9].title} />
+          </div>
         </main>
       </div>
 
@@ -173,10 +225,14 @@ export default function WhatIsWorldHeritagePage() {
                 <div className="grid gap-2">
                   {sections.map((s, i) => (
                     <a
-                      key={s.id}
+                      key={`mobile-${s.id}`}
                       href={`#${s.id}`}
                       onClick={handleClose}
-                      className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl text-slate-700 font-bold active:bg-indigo-600 active:text-white transition-all shadow-sm border border-transparent"
+                      className={`flex items-center justify-between p-4 rounded-2xl font-bold transition-all ${
+                        activeId === s.id
+                          ? "bg-indigo-600 text-white shadow-lg"
+                          : "bg-slate-50 text-slate-700"
+                      }`}
                       style={{
                         animation: !isClosing
                           ? `itemShow 0.4s ease-out ${i * 0.04}s both`
