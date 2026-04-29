@@ -2,11 +2,10 @@ from rest_framework import viewsets , filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Heritage , Quiz , Notification
 from .serializers import HeritageSerializer , QuizSerializer , NotificationSerializer
-from django.shortcuts import render
 from django.utils import timezone
 
 class HeritageViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Heritage.objects.all().order_by('-id')
+    queryset = Heritage.objects.all().order_by('-code')
     serializer_class = HeritageSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
 
@@ -16,23 +15,6 @@ class HeritageViewSet(viewsets.ReadOnlyModelViewSet):
     # 検索値設定（?search=）
     search_fields = ['name', 'description', 'countries__name']
 
-# class QuizViewSet(viewsets.ReadOnlyModelViewSet):
-#     serializer_class = QuizSerializer
-#     pagination_class = None
-
-#     def get_queryset(self):
-#         difficulty = self.request.query_params.get('level', '2')
-#         count = int(self.request.query_params.get('count', 5))
-#         heritage_id = self.request.query_params.get('heritage_id', '0')
-
-#         queryset = Quiz.objects.all()
-#         queryset = queryset.filter(difficulty=difficulty)
-#         if heritage_id and heritage_id != '0':
-#             queryset = queryset.filter(heritage=heritage_id)
-
-#         return queryset.order_by('?')[:count]
-    
-
 class QuizViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuizSerializer
     pagination_class = None
@@ -40,7 +22,7 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         # 難易度のバリデーション
         difficulty = self.request.query_params.get('level', '2')
-        if difficulty not in ['1', '2', '3']:
+        if difficulty not in ['1', '2', '3', '4', '5']:
             difficulty = '2'
 
         # 取得件数のバリデーション
@@ -51,15 +33,14 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
             count = 5
 
         # 世界遺産IDのバリデーション
-        heritage_id = self.request.query_params.get('heritage_id', '0')
+        heritage_code = self.request.query_params.get('heritageCode')
 
         # クエリの組み立て
         queryset = Quiz.objects.filter(difficulty=difficulty)
         
-        if heritage_id and heritage_id != '0':
+        if heritage_code and heritage_code != '0':
             try:
-                # IDチェック
-                queryset = queryset.filter(heritage_id=int(heritage_id))
+                queryset = queryset.filter(heritage__code=heritage_code)
             except (ValueError, TypeError):
                 pass
 

@@ -26,6 +26,7 @@ class QuizSerializer(serializers.ModelSerializer):
         model = Quiz
         fields = [
             'id',
+            'code',
             'heritage_name',
             'question', 
             'tips',

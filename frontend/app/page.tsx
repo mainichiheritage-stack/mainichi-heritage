@@ -1,35 +1,43 @@
 "use client";
 
-import React from 'react';
-import {useState , useEffect} from 'react';
-import Link from 'next/link';
-import { BookOpen, BrainCircuit, History, TrendingUp} from 'lucide-react';
-import { FeatureCard } from '@/components/FeatureCard';
-import QuizSettingsModal from '@/components/QuizSettingsModal';
-import { NotificationItem } from './types';
-import NotificationModal from '@/components/NotificationModal';
+import React from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  BookOpen,
+  BrainCircuit,
+  History,
+  TrendingUp,
+  Globe,
+  GraduationCap,
+} from "lucide-react";
+import { FeatureCard } from "@/components/FeatureCard";
+import QuizSettingsModal from "@/components/QuizSettingsModal";
+import { NotificationItem } from "./types";
+import NotificationModal from "@/components/NotificationModal";
 
 export default function Home() {
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [selectedNotification, setSelectedNotification] = useState<NotificationItem | null>(null);
+  const [selectedNotification, setSelectedNotification] =
+    useState<NotificationItem | null>(null);
 
   const CATEGORY_MAP: { [key: number]: { label: string; color: string } } = {
-    1: { label: '重要', color: 'bg-red-500' },
-    2: { label: 'アップデート', color: 'bg-blue-500' },
-    3: { label: '世界遺産追加', color: 'bg-emerald-500' },
-    4: { label: 'クイズ追加', color: 'bg-yellow-500' },
-    5: { label: '検定情報', color: 'bg-red-500' },
-    9: { label: 'その他', color: 'bg-slate-500' },
+    1: { label: "重要", color: "bg-red-500" },
+    2: { label: "アップデート", color: "bg-blue-500" },
+    3: { label: "世界遺産追加", color: "bg-emerald-500" },
+    4: { label: "クイズ追加", color: "bg-yellow-500" },
+    5: { label: "検定情報", color: "bg-red-500" },
+    9: { label: "その他", color: "bg-slate-500" },
   };
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/`,
+        );
         const data = await response.json();
         setNotifications(Array.isArray(data) ? data : data.results || []);
-
       } catch (error) {
         console.error("お知らせの取得に失敗しました：", error);
       }
@@ -40,7 +48,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-
       {/* ヒーローセクション */}
       <section className="relative pt-16 pb-12 md:pt-24 md:pb-20 text-center px-4 overflow-hidden">
         <div className="max-w-4xl mx-auto">
@@ -54,8 +61,10 @@ export default function Home() {
             </p>
           </div>
           <p className="text-slate-600 text-sm md:text-lg max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed font-medium px-2">
-            世界中の素晴らしい遺産を、もっと身近に。<br className="hidden md:block" />
-            世界遺産検定合格に必要な知識を体系的に学び、<br className="hidden md:block" />
+            世界中の素晴らしい遺産を、もっと身近に。
+            <br className="hidden md:block" />
+            世界遺産検定合格に必要な知識を体系的に学び、
+            <br className="hidden md:block" />
             クイズ形式で着実に定着させるための学習用アーカイブです。
           </p>
         </div>
@@ -74,35 +83,63 @@ export default function Home() {
 
             {/* 機能 */}
             <div className="grid grid-cols-2 gap-3 md:gap-4">
-              <Link href="/heritages" className="block active:scale-[0.98] transition-transform">
-                <FeatureCard 
-                  icon={<BookOpen className="text-blue-500" />} 
-                  title="データベース" 
-                  desc="世界遺産を地域別に閲覧"
+              <Link
+                href="/about-exam"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<GraduationCap className="text-indigo-500" />}
+                  title="世界遺産検定とは"
+                  desc="検定の概要と対策方法"
+                  iconBg="bg-indigo-100"
+                />
+              </Link>
+              <Link
+                href="/basic"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<Globe className="text-emerald-500" />}
+                  title="基礎知識"
+                  desc="世界遺産に関連する基礎知識を学ぶ"
+                  iconBg="bg-emerald-100"
+                />
+              </Link>
+              <Link
+                href="/heritages"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<BookOpen className="text-blue-500" />}
+                  title="世界遺産一覧"
+                  desc="画像付きで世界遺産を学ぶ"
                   iconBg="bg-blue-100"
                 />
               </Link>
-              <div onClick={() => setIsModalOpen(true)} className="cursor-pointer active:scale-[0.98] transition-transform">
-                <FeatureCard 
-                  icon={<BrainCircuit className="text-green-500" />} 
-                  title="4択クイズ" 
-                  desc="楽しく知識を定着"
+              <div
+                onClick={() => setIsModalOpen(true)}
+                className="cursor-pointer active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<BrainCircuit className="text-green-500" />}
+                  title="4択クイズ"
+                  desc="世界遺産検定レベルの問題で、楽しく知識を定着"
                   iconBg="bg-green-100"
                 />
               </div>
               <div className="active:scale-[0.98] transition-transform">
-                <FeatureCard 
-                  icon={<History className="text-purple-500" />} 
-                  title="学習履歴" 
+                <FeatureCard
+                  icon={<History className="text-purple-500" />}
+                  title="学習履歴"
                   desc="過去の結果を分析"
                   iconBg="bg-purple-100"
                   isAvailable={false}
                 />
               </div>
               <div className="active:scale-[0.98] transition-transform">
-                <FeatureCard 
-                  icon={<TrendingUp className="text-orange-500" />} 
-                  title="苦手分析" 
+                <FeatureCard
+                  icon={<TrendingUp className="text-orange-500" />}
+                  title="苦手分析"
                   desc="弱点を重点攻略"
                   iconBg="bg-orange-100"
                   isAvailable={false}
@@ -124,19 +161,24 @@ export default function Home() {
               <div className="max-h-[300px] lg:max-h-[450px] overflow-y-auto">
                 {notifications.length > 0 ? (
                   notifications.map((item) => {
-                    const config = CATEGORY_MAP[item.category] || CATEGORY_MAP[9];
+                    const config =
+                      CATEGORY_MAP[item.category] || CATEGORY_MAP[9];
                     return (
-                      <div 
-                        key={item.id} 
+                      <div
+                        key={item.id}
                         onClick={() => setSelectedNotification(item)}
                         className="flex items-start gap-3 p-4 border-b border-slate-100 hover:bg-white active:bg-slate-100 transition-colors cursor-pointer group"
                       >
                         <div className="shrink-0 flex flex-col items-start gap-1">
-                          <span className={`${config.color} text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm`}>
+                          <span
+                            className={`${config.color} text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm`}
+                          >
                             {item.category_display}
                           </span>
                           <span className="text-[10px] font-medium text-slate-400 font-mono">
-                            {new Date(item.published_at).toLocaleDateString('ja-JP').replace(/\//g, '.')}
+                            {new Date(item.published_at)
+                              .toLocaleDateString("ja-JP")
+                              .replace(/\//g, ".")}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -155,7 +197,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -170,16 +211,15 @@ export default function Home() {
         </div>
       </section> */}
 
-      <NotificationModal 
-        item={selectedNotification} 
-        onClose={() => setSelectedNotification(null)} 
+      <NotificationModal
+        item={selectedNotification}
+        onClose={() => setSelectedNotification(null)}
       />
 
-      <QuizSettingsModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <QuizSettingsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
-
     </div>
   );
 }
