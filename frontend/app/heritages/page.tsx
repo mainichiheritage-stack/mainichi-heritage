@@ -208,6 +208,11 @@ export default function HeritageListPage() {
     );
   };
 
+  const handleClear = () => {
+    setInputText("");
+    updateNavigation({ search: "", category: "0", page: 1 });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 py-10">
@@ -231,6 +236,13 @@ export default function HeritageListPage() {
                 placeholder="遺産名または国名で検索"
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
+              <button
+                type="button"
+                onClick={() => setInputText("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -249,6 +261,14 @@ export default function HeritageListPage() {
               <option value="3">複合遺産</option>
             </select>
           </div>
+
+          <button
+            type="button"
+            onClick={handleClear}
+            className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors"
+          >
+            リセット
+          </button>
 
           <button
             type="submit"
