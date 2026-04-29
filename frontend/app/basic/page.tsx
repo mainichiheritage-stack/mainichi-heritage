@@ -12,6 +12,7 @@ import { NegativeSection } from "./_components/NegativeSection";
 import { IntangibleSection } from "./_components/IntangibleSection";
 import { ReligionSection } from "./_components/ReligionSection";
 import { CulturalLandscapeSection } from "./_components/CulturalLandscapeSection";
+import { ArchitectureSection } from "./_components/ArchitectureSection";
 
 const subscribe = () => () => {};
 
@@ -40,6 +41,7 @@ export default function WhatIsWorldHeritagePage() {
       { id: "cultural-landscape", title: "文化的景観" },
       { id: "intangible", title: "無形遺産・世界の記憶" },
       { id: "religion", title: "世界三大宗教" },
+      { id: "architecture", title: "建築様式" },
     ],
     [],
   );
@@ -141,6 +143,9 @@ export default function WhatIsWorldHeritagePage() {
           </div>
           <div id="religion">
             <ReligionSection title={sections[9].title} />
+          </div>
+          <div id="architecture">
+            <ArchitectureSection title={sections[10].title} />
           </div>
         </main>
       </div>
