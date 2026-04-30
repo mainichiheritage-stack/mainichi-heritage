@@ -12,6 +12,7 @@ const FOOTER_LINKS = {
     { label: "世界遺産一覧", href: "/heritages" },
   ],
   support: [
+    { label: "当サイトについて（プロフィール）", href: "/about-us" },
     { label: "プライバシーポリシー", href: "/privacy" },
     { label: "ライセンス・権利表記", href: "/license" },
     {
