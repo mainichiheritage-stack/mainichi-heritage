@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +51,9 @@ export const metadata: Metadata = {
     title: "まいにち世界遺産 | 世界遺産検定対策",
     description: "クイズと豊富な画像で世界遺産をマスターしよう！",
   },
+  other: {
+    "google-adsense-account": "ca-pub-8615613372819949",
+  },
 };
 
 export const viewport: Viewport = {
@@ -66,6 +70,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
+      <head>
+        {/* アドセンス審査用スクリプト */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8615613372819949"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
