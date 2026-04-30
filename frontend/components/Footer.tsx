@@ -1,7 +1,7 @@
-"use client"; // useStateを使うため追加
+"use client";
 
 import Link from "next/link";
-import { Landmark } from "lucide-react";
+import { Landmark, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import QuizSettingsModal from "./QuizSettingsModal";
 
@@ -12,13 +12,17 @@ const FOOTER_LINKS = {
     { label: "世界遺産一覧", href: "/heritages" },
   ],
   support: [
+    { label: "当サイトについて（プロフィール）", href: "/about-us" },
     { label: "プライバシーポリシー", href: "/privacy" },
     { label: "ライセンス・権利表記", href: "/license" },
+  ],
+  sns: [
+    { label: "公式 X (Twitter)", href: "https://x.com/mainichi_heri" },
     {
-      label: "お問い合わせ",
-      href: "https://forms.gle/nydMBWr1UyAXJZ3a6",
-      external: true,
+      label: "公式 Instagram",
+      href: "https://www.instagram.com/mainichi.heritage/",
     },
+    { label: "お問い合わせ", href: "https://forms.gle/nydMBWr1UyAXJZ3a6" },
   ],
 };
 
@@ -29,8 +33,9 @@ export default function Footer() {
   return (
     <footer className="bg-slate-50 border-t border-slate-200 pt-16 pb-8 text-slate-600">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          {/* ブランドエリア */}
+        {/* メイングリッド：4列構成（ブランド 2列分 / メニュー 3列） */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
+          {/* 1-2列目：ブランドエリア */}
           <div className="col-span-1 md:col-span-2 space-y-4">
             <Link
               href="/"
@@ -52,7 +57,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 学習メニュー */}
+          {/* 3列目：学習メニュー */}
           <div>
             <h3 className="font-bold text-slate-900 mb-5 text-sm">
               学習メニュー
@@ -71,7 +76,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="hover:text-blue-600 transition-colors cursor-pointer"
+                  className="hover:text-blue-600 transition-colors cursor-pointer text-left"
                 >
                   4択クイズ
                 </button>
@@ -79,7 +84,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* インフォメーション */}
+          {/* 4列目：インフォメーション */}
           <div>
             <h3 className="font-bold text-slate-900 mb-5 text-sm">
               インフォメーション
@@ -90,9 +95,6 @@ export default function Footer() {
                   <Link
                     href={link.href}
                     className="hover:text-blue-600 transition-colors"
-                    {...(link.external
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
                   >
                     {link.label}
                   </Link>
@@ -100,8 +102,31 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* 5列目：SNS・コンタクト */}
+          <div>
+            <h3 className="font-bold text-slate-900 mb-5 text-sm">
+              SNS・お問い合わせ
+            </h3>
+            <ul className="space-y-3 text-sm">
+              {FOOTER_LINKS.sns.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
+                  >
+                    {link.label}
+                    <ExternalLink size={12} className="text-slate-400" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
+        {/* コピーライトエリア */}
         <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[11px] font-medium text-slate-400 tracking-wider">
             <p>© {currentYear} MAINICHI HERITAGE</p>
