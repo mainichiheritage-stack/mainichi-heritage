@@ -114,37 +114,37 @@ export default function WhatIsWorldHeritagePage() {
 
         {/* --- コンテンツ --- */}
         <main className="flex-1 space-y-28">
-          <div id="about">
+          <div id="about" className="scroll-mt-24 md:scroll-mt-28">
             <AboutSection title={sections[0].title} />
           </div>
-          <div id="types">
+          <div id="types" className="scroll-mt-24 md:scroll-mt-28">
             <TypesSection title={sections[1].title} />
           </div>
-          <div id="convention">
+          <div id="convention" className="scroll-mt-24 md:scroll-mt-28">
             <ConventionSection title={sections[2].title} />
           </div>
-          <div id="process">
+          <div id="process" className="scroll-mt-24 md:scroll-mt-28">
             <ProcessSection title={sections[3].title} />
           </div>
-          <div id="criteria">
+          <div id="criteria" className="scroll-mt-24 md:scroll-mt-28">
             <CriteriaSection title={sections[4].title} />
           </div>
-          <div id="danger">
+          <div id="danger" className="scroll-mt-24 md:scroll-mt-28">
             <DangerSection title={sections[5].title} />
           </div>
-          <div id="negative">
+          <div id="negative" className="scroll-mt-24 md:scroll-mt-28">
             <NegativeSection title={sections[6].title} />
           </div>
-          <div id="cultural-landscape">
+          <div id="cultural-landscape" className="scroll-mt-24 md:scroll-mt-28">
             <CulturalLandscapeSection title={sections[7].title} />
           </div>
-          <div id="intangible">
+          <div id="intangible" className="scroll-mt-24 md:scroll-mt-28">
             <IntangibleSection title={sections[8].title} />
           </div>
-          <div id="religion">
+          <div id="religion" className="scroll-mt-24 md:scroll-mt-28">
             <ReligionSection title={sections[9].title} />
           </div>
-          <div id="architecture">
+          <div id="architecture" className="scroll-mt-24 md:scroll-mt-28">
             <ArchitectureSection title={sections[10].title} />
           </div>
         </main>
