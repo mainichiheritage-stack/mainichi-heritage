@@ -2,174 +2,217 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, BrainCircuit } from "lucide-react";
+import {
+  X,
+  BrainCircuit,
+  ChevronRight,
+  Filter,
+  Lock,
+  Sparkles,
+} from "lucide-react";
+import { CURRENT_EVENTS_DATA } from "@/constants/currentEvents";
 
 interface QuizSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  heritageCode?: string;
+  category: string;
+  questionTitle?: string;
+  code?: string;
 }
 
 export default function QuizSettingsModal({
   isOpen,
   onClose,
-  heritageCode = "",
+  category = "all",
+  questionTitle = "",
+  code = "",
 }: QuizSettingsModalProps) {
+  const router = useRouter();
+
+  // 共通設定の状態管理
   const [questionCount, setQuestionCount] = useState("5");
   const [level, setLevel] = useState("2");
-  const router = useRouter();
+
+  // 時事問題(category: "c")の場合の回数選択状態
+  const CURRENT_EVENTS_OPTIONS = CURRENT_EVENTS_DATA;
+  const [selectedEventCode, setSelectedEventCode] = useState(
+    code || CURRENT_EVENTS_OPTIONS[0].code,
+  );
 
   if (!isOpen) return null;
 
-  const handleStart = () => {
-    // 現在の場所（パス + クエリ）を取得
-    const currentPath = window.location.pathname + window.location.search;
+  const getSubTitle = () => {
+    switch (category) {
+      case "c":
+        return `「${questionTitle}」の問題を生成します`;
+      case "g":
+        return "「基礎知識（総論）」の問題を生成します";
+      case "h":
+        return questionTitle
+          ? `「${questionTitle}」の問題を生成します`
+          : "「世界遺産」に絞った問題を生成します";
+      default:
+        return "全範囲からランダムに問題を生成します";
+    }
+  };
 
-    // 遷移先URLを構築
+  const handleStart = () => {
+    const finalCode = category === "c" ? selectedEventCode : code;
     const params = new URLSearchParams({
       count: questionCount,
       level: level,
-      heritageCode: heritageCode,
-      from: currentPath,
+      code: finalCode,
+      category: category,
     });
 
     onClose();
     router.push(`/quiz?${params.toString()}`);
   };
 
+  const getBtnStyle = (isSelected: boolean, isDisabled: boolean = false) => {
+    if (isDisabled) {
+      return "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed opacity-80 bg-[repeating-linear-gradient(-45deg,transparent,transparent_5px,rgba(241,245,249,0.5)_5px,rgba(241,245,249,0.5)_10px)]";
+    }
+    return isSelected
+      ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100 scale-[1.02]"
+      : "bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-blue-50/30";
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-6 flex justify-between items-start">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 text-blue-600">
-              <BrainCircuit className="w-6 h-6" />
-              <h2 className="text-2xl font-bold text-slate-900">クイズ設定</h2>
+    <div className="fixed inset-0 z-[9999] isolate flex items-end md:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 md:p-4 text-slate-900">
+      <div className="bg-white w-full max-w-lg rounded-t-[2.5rem] md:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom md:zoom-in duration-300 max-h-[95vh] flex flex-col">
+        <div className="md:hidden w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-2" />
+
+        {/* ヘッダー */}
+        <div className="p-6 md:p-8 border-b border-slate-50 bg-gradient-to-b from-blue-50/50 to-white">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg shadow-blue-200">
+              <BrainCircuit className="w-7 h-7 text-white" />
             </div>
-            <p className="text-slate-400 text-sm">
-              クイズの条件を選択してスタートしましょう
-            </p>
+            <button
+              onClick={onClose}
+              className="p-2 bg-slate-100 rounded-full text-slate-400 active:scale-90 transition-transform"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black tracking-tight text-slate-900">
+              クイズを生成
+            </h2>
+            <div className="flex items-center gap-2 text-blue-600">
+              <Sparkles className="w-4 h-4" />
+              <p className="text-sm font-bold">{getSubTitle()}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="px-8 pb-8 space-y-6">
-          {/* 問題数選択 */}
-          <section>
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4">
-              問題数
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: "5問", value: "5" },
-                { label: "10問", value: "10" },
-              ].map((item) => (
-                <label
-                  key={item.value}
-                  className={`
-                    flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all
-                    ${
-                      questionCount === item.value
-                        ? "border-blue-600 bg-blue-50/30"
-                        : "border-slate-100 hover:bg-slate-50"
-                    }
-                  `}
-                >
-                  <input
-                    type="radio"
-                    name="qCount"
-                    className="w-4 h-4 accent-blue-600"
-                    checked={questionCount === item.value}
-                    onChange={() => setQuestionCount(item.value)}
-                  />
-                  <span
-                    className={`text-sm font-bold ${questionCount === item.value ? "text-blue-600" : "text-slate-700"}`}
+        <div className="p-6 md:p-8 space-y-8 overflow-y-auto">
+          {/* 時事問題(category: "c")専用：開催回選択 */}
+          {category === "c" && (
+            <section className="animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="w-4 h-4 text-blue-600" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  開催回を選択
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {CURRENT_EVENTS_OPTIONS.map((item) => (
+                  <button
+                    key={item.code}
+                    onClick={() => setSelectedEventCode(item.code)}
+                    className={`py-4 rounded-2xl text-xs font-black transition-all border-2 ${getBtnStyle(
+                      selectedEventCode === item.code,
+                    )}`}
                   >
                     {item.label}
-                  </span>
-                </label>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 問題数(count)設定 */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-1 h-3 bg-blue-600 rounded-full" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                問題数
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {["5", "10"].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setQuestionCount(v)}
+                  className={`py-4 rounded-2xl text-sm font-black transition-all border-2 ${getBtnStyle(
+                    questionCount === v,
+                  )}`}
+                >
+                  {v}問
+                </button>
               ))}
             </div>
           </section>
 
-          {/* 難易度選択 */}
+          {/* レベル(level)設定 */}
           <section>
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4">
-              レベル
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-1 h-3 bg-blue-600 rounded-full" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                レベル
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
               {[
                 { label: "3級", value: "2" },
                 { label: "2級", value: "3" },
                 { label: "準1級", value: "4" },
                 { label: "1級", value: "5" },
               ].map((item) => {
-                const isDisabled = item.value !== "2";
-
+                const isAvailable = item.value === "2";
                 return (
-                  <label
+                  <button
                     key={item.value}
-                    className={`
-                      relative flex items-center gap-3 p-3 rounded-xl border-2 transition-all
-                      ${
-                        isDisabled
-                          ? "bg-slate-50 border-slate-50 cursor-not-allowed opacity-60"
-                          : level === item.value
-                            ? "border-blue-600 bg-blue-50/30 cursor-pointer"
-                            : "border-slate-100 hover:bg-slate-50 cursor-pointer"
-                      }
-                    `}
+                    disabled={!isAvailable}
+                    onClick={() => setLevel(item.value)}
+                    className={`py-4 rounded-2xl text-sm font-black transition-all border-2 flex flex-col items-center justify-center gap-1.5 ${getBtnStyle(
+                      level === item.value,
+                      !isAvailable,
+                    )}`}
                   >
-                    <input
-                      type="radio"
-                      name="qLevel"
-                      className="hidden"
-                      checked={level === item.value}
-                      onChange={() => !isDisabled && setLevel(item.value)}
-                      disabled={isDisabled}
-                    />
-
-                    <div className="flex flex-col">
-                      <span
-                        className={`text-sm font-bold ${level === item.value && !isDisabled ? "text-blue-600" : "text-slate-700"}`}
-                      >
-                        {item.label}
-                      </span>
-                      {isDisabled && (
-                        <span className="text-[9px] text-slate-400 font-medium">
-                          Coming Soon
+                    <span
+                      className={
+                        isAvailable ? "text-inherit" : "text-slate-500"
+                      }
+                    >
+                      {item.label}
+                    </span>
+                    {!isAvailable && (
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-200/50 rounded-full border border-slate-300/50">
+                        <Lock className="w-2.5 h-2.5 text-slate-400" />
+                        <span className="text-[8px] font-bold text-slate-500 leading-none">
+                          COMING SOON
                         </span>
-                      )}
-                    </div>
-                    {!isDisabled && level === item.value && (
-                      <div className="absolute right-3 w-2 h-2 bg-blue-600 rounded-full" />
+                      </div>
                     )}
-                  </label>
+                  </button>
                 );
               })}
             </div>
           </section>
+        </div>
 
-          {/* フッターボタン */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition"
-            >
-              キャンセル
-            </button>
-            <button
-              onClick={handleStart}
-              className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-slate-950 hover:bg-slate-800 transition"
-            >
-              スタート
-            </button>
-          </div>
+        {/* 下部固定ボタン */}
+        <div className="p-6 md:p-8 bg-white border-t border-slate-50">
+          <button
+            onClick={handleStart}
+            className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-200 flex items-center justify-center gap-2 active:scale-[0.97] transition-all hover:bg-blue-700"
+          >
+            開始
+            <ChevronRight className="w-6 h-6" />
+          </button>
         </div>
       </div>
     </div>

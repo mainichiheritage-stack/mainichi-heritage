@@ -20,7 +20,7 @@ class HeritageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class QuizSerializer(serializers.ModelSerializer):
-    heritage_name = serializers.ReadOnlyField(source='heritage.name')
+    heritage_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
@@ -37,6 +37,10 @@ class QuizSerializer(serializers.ModelSerializer):
             'explanation',
             'difficulty'
         ]
+
+    def get_heritage_name(self, obj):
+        # heritageが紐付いている時だけ名前を返し、なければNoneを返す
+        return obj.heritage.name if obj.heritage else None
 
 class NotificationSerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(source='get_category_display', read_only=True)

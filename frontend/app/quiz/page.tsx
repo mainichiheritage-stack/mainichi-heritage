@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  useCallback,
+  useRef,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
@@ -34,13 +40,16 @@ function QuizContent() {
 
   const count = searchParams.get("count") || "5";
   const level = searchParams.get("level") || "2";
-  const heritageCode = searchParams.get("heritageCode") || "";
+  const code = searchParams.get("code") || "";
+  const category = searchParams.get("category") || "all";
   const fromPath = searchParams.get("from") || "/";
 
   const [quizzes, setQuizzes] = useState<QuizData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<"empty" | "error" | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
+
+  const hasFetched = useRef(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTips, setShowTips] = useState(false);
@@ -62,8 +71,14 @@ function QuizContent() {
     // 10秒のタイムアウト設定
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const query = new URLSearchParams({
+      count,
+      level,
+      code,
+      category,
+    });
 
-    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/quizzes/?count=${count}&level=${level}&heritageCode=${heritageCode}`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/quizzes/?${query.toString()}`;
 
     try {
       const response = await fetch(url, {
@@ -96,9 +111,11 @@ function QuizContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [count, level, heritageCode]);
+  }, [count, level, code]);
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     loadQuizzes();
   }, [loadQuizzes]);
 
@@ -184,6 +201,14 @@ function QuizContent() {
       setIsFinished(true);
       window.scrollTo(0, 0);
     }
+  };
+
+  const getDisplayName = (heritageName: string | null) => {
+    if (heritageName) return heritageName;
+
+    if (category === "g") return "基礎知識（総論）";
+    if (category === "c") return `時事問題`;
+    return "基礎知識（総論）";
   };
 
   // --- 結果画面 ---
@@ -302,7 +327,7 @@ function QuizContent() {
           className={`bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all ${isAnswered ? "pb-32 md:pb-8" : ""}`}
         >
           <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full mb-4">
-            {currentQuiz.heritage_name}
+            {getDisplayName(currentQuiz.heritage_name)}
           </span>
           <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-6 md:mb-8 leading-relaxed">
             {currentQuiz.question}

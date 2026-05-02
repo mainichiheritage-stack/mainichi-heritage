@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import viewsets , filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Heritage , Quiz , Notification
@@ -20,31 +22,53 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        # 難易度のバリデーション
+        # --- パラメータ取得 ---
+        # 難易度
         difficulty = self.request.query_params.get('level', '2')
         if difficulty not in ['1', '2', '3', '4', '5']:
             difficulty = '2'
 
-        # 取得件数のバリデーション
+        # 問題数
         count_param = self.request.query_params.get('count', '5')
         try:
             count = max(1, min(int(count_param), 10))
         except (ValueError, TypeError):
             count = 5
 
-        # 世界遺産IDのバリデーション
-        heritage_code = self.request.query_params.get('heritageCode')
+        # カテゴリ
+        category = self.request.query_params.get('category', 'all')
+        if category not in ['all', 'h', 'g', 'c']:
+            category = 'all'
 
-        # クエリの組み立て
+        # コード
+        code = self.request.query_params.get('code')
+
+        # --- クエリセット--- 
+        # 共通
         queryset = Quiz.objects.filter(difficulty=difficulty)
-        
-        if heritage_code and heritage_code != '0':
-            try:
-                queryset = queryset.filter(heritage__code=heritage_code)
-            except (ValueError, TypeError):
-                pass
 
-        # ランダムに取得して件数を制限
+        # カテゴリ別に「上書き」する
+        if category == 'g':
+            # 総論：q-g で始まるものだけに固定する
+            queryset = queryset.filter(code__startswith='q-g')
+        
+        elif category == 'c':
+            # 時事：q-c で始まり、かつ年指定があれば絞る
+            queryset = queryset.filter(code__startswith=f'{code}')
+
+        elif category == 'h':
+            # 世界遺産：遺産IDが紐付いているもの
+            queryset = queryset.exclude(heritage__isnull=True)
+            if code and code != '0':
+                match = re.search(r'\d+', code)
+                if match:
+                    heritage_num = match.group()
+                    queryset = queryset.filter(code__startswith=f'q-h-{heritage_num}')
+        
+        # デバッグ: 実際に発行されるクエリの数を確認
+        print(f"DEBUG: category={category}, count={queryset.count()}")
+
+        # ランダムに並び替えて制限
         return queryset.order_by('?')[:count]
 
 
