@@ -103,7 +103,9 @@ class Quiz(models.Model):
         Heritage, 
         on_delete=models.CASCADE, 
         related_name='quizzes',
-        verbose_name="対象の遺産"
+        verbose_name="対象の遺産",
+        blank=True,
+        null=True
     )
     code = models.CharField(max_length=20, unique=True, verbose_name="クイズコード")
     question = models.TextField(verbose_name="問題文")
@@ -122,7 +124,8 @@ class Quiz(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
     def __str__(self):
-        return f"[{self.get_difficulty_display()}] {self.heritage.name}に関する問題"
+        target_name = self.heritage.name if self.heritage else self.code
+        return f"[{self.get_difficulty_display()}] {target_name}"
 
     class Meta:
         verbose_name = "クイズ"

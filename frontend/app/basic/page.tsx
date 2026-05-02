@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useSyncExternalStore, useMemo } from "react";
-import { List, ChevronRight, X } from "lucide-react";
+import { List, ChevronRight, X, BrainCircuit, Sparkles } from "lucide-react";
 import { AboutSection } from "./_components/AboutSection";
 import { TypesSection } from "./_components/TypesSection";
 import { ConventionSection } from "./_components/ConventionSection";
@@ -13,6 +13,7 @@ import { IntangibleSection } from "./_components/IntangibleSection";
 import { ReligionSection } from "./_components/ReligionSection";
 import { CulturalLandscapeSection } from "./_components/CulturalLandscapeSection";
 import { ArchitectureSection } from "./_components/ArchitectureSection";
+import QuizStartButton from "@/components/QuizStartButton";
 
 const subscribe = () => () => {};
 
@@ -90,61 +91,82 @@ export default function WhatIsWorldHeritagePage() {
       <div className="max-w-6xl mx-auto px-4 py-12 md:flex md:gap-12 pb-32">
         {/* --- PC用サイドバー --- */}
         <aside className="hidden md:block w-64 shrink-0">
-          <div className="sticky top-24">
-            <h3 className="font-black mb-4 flex items-center gap-2">
-              <List size={20} className="text-indigo-600" /> 目次
-            </h3>
-            <nav className="flex flex-col border-l-2 border-slate-100">
-              {sections.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className={`px-4 py-2 text-sm transition-all font-bold border-l-2 -ml-[2px] ${
-                    activeId === s.id
-                      ? "text-indigo-600 border-indigo-600 bg-indigo-50/50" // アクティブ時
-                      : "text-slate-500 border-transparent hover:text-indigo-600" // 通常時
-                  }`}
-                >
-                  {s.title}
-                </a>
-              ))}
-            </nav>
+          <div className="sticky top-24 space-y-8">
+            <section>
+              <h3 className="font-black mb-4 flex items-center gap-2 text-slate-800">
+                <List size={20} className="text-indigo-600" /> 目次
+              </h3>
+              <nav className="flex flex-col border-l-2 border-slate-100">
+                {sections.map((s) => (
+                  <a
+                    key={s.id}
+                    href={`#${s.id}`}
+                    className={`px-4 py-2 text-sm transition-all font-bold border-l-2 -ml-[2px] ${
+                      activeId === s.id
+                        ? "text-indigo-600 border-indigo-600 bg-indigo-50/50"
+                        : "text-slate-500 border-transparent hover:text-indigo-600"
+                    }`}
+                  >
+                    {s.title}
+                  </a>
+                ))}
+              </nav>
+            </section>
+
+            {/* --- PC版クイズ開始カード --- */}
+            <div className="p-5 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl shadow-xl shadow-indigo-100 text-white relative overflow-hidden group">
+              <Sparkles className="absolute -right-2 -top-2 w-16 h-16 text-white/10 rotate-12 group-hover:scale-110 transition-transform" />
+              <div className="relative z-10">
+                <div className="bg-white/20 w-fit p-2 rounded-xl mb-3">
+                  <BrainCircuit size={20} />
+                </div>
+                <h4 className="font-black text-sm mb-1">知識をチェック</h4>
+                <p className="text-[10px] text-indigo-100 mb-4 font-medium leading-relaxed">
+                  総論の範囲からランダムに4択問題を出題します。
+                </p>
+                <QuizStartButton
+                  questionTitle="世界遺産の総論"
+                  category="g"
+                  variant="pc"
+                />
+              </div>
+            </div>
           </div>
         </aside>
 
         {/* --- コンテンツ --- */}
         <main className="flex-1 space-y-28">
-          <div id="about">
+          <div id="about" className="scroll-mt-24 md:scroll-mt-28">
             <AboutSection title={sections[0].title} />
           </div>
-          <div id="types">
+          <div id="types" className="scroll-mt-24 md:scroll-mt-28">
             <TypesSection title={sections[1].title} />
           </div>
-          <div id="convention">
+          <div id="convention" className="scroll-mt-24 md:scroll-mt-28">
             <ConventionSection title={sections[2].title} />
           </div>
-          <div id="process">
+          <div id="process" className="scroll-mt-24 md:scroll-mt-28">
             <ProcessSection title={sections[3].title} />
           </div>
-          <div id="criteria">
+          <div id="criteria" className="scroll-mt-24 md:scroll-mt-28">
             <CriteriaSection title={sections[4].title} />
           </div>
-          <div id="danger">
+          <div id="danger" className="scroll-mt-24 md:scroll-mt-28">
             <DangerSection title={sections[5].title} />
           </div>
-          <div id="negative">
+          <div id="negative" className="scroll-mt-24 md:scroll-mt-28">
             <NegativeSection title={sections[6].title} />
           </div>
-          <div id="cultural-landscape">
+          <div id="cultural-landscape" className="scroll-mt-24 md:scroll-mt-28">
             <CulturalLandscapeSection title={sections[7].title} />
           </div>
-          <div id="intangible">
+          <div id="intangible" className="scroll-mt-24 md:scroll-mt-28">
             <IntangibleSection title={sections[8].title} />
           </div>
-          <div id="religion">
+          <div id="religion" className="scroll-mt-24 md:scroll-mt-28">
             <ReligionSection title={sections[9].title} />
           </div>
-          <div id="architecture">
+          <div id="architecture" className="scroll-mt-24 md:scroll-mt-28">
             <ArchitectureSection title={sections[10].title} />
           </div>
         </main>
@@ -176,13 +198,25 @@ export default function WhatIsWorldHeritagePage() {
             }
           `}
         </style>
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="fixed bottom-8 right-6 w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90"
-          style={{ zIndex: 99999, position: "fixed" }}
-        >
-          <List size={24} />
-        </button>
+
+        {/* --- スマホ用 フローティングクイズボタン --- */}
+        <div className="md:hidden fixed bottom-6 left-6 right-24 z-[50]">
+          <QuizStartButton
+            questionTitle="世界遺産の総論"
+            category="g"
+            variant="mobile"
+          />
+        </div>
+        {/* --- スマホ用 目次ボタン --- */}
+        <div className="md:hidden">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="fixed bottom-6 right-6 w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-2xl transition-transform active:scale-90"
+            style={{ zIndex: 99999, position: "fixed" }}
+          >
+            <List size={24} />
+          </button>
+        </div>
 
         {/* メニュー本体 */}
         {isMobileMenuOpen && (

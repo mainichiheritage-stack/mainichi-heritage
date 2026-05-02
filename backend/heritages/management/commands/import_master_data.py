@@ -99,9 +99,10 @@ class Command(BaseCommand):
             data = json.load(f)
             heritage_map = {h.code: h for h in Heritage.objects.all()}
             for item in data:
-                heritage = heritage_map.get(item['heritage_code'])
-                if not heritage:
-                    continue
+                h_code = item.get('heritage_code')
+                # 遺産コードがある場合のみマップから検索（なければ None のまま）
+                heritage = heritage_map.get(h_code) if h_code else None
+                
                 Quiz.objects.update_or_create(
                     code=item['code'],
                     defaults={

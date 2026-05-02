@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Globe,
   GraduationCap,
+  Newspaper,
 } from "lucide-react";
 import { FeatureCard } from "@/components/FeatureCard";
 import QuizSettingsModal from "@/components/QuizSettingsModal";
@@ -92,6 +93,17 @@ export default function Home() {
                   title="世界遺産検定とは"
                   desc="検定の概要と対策方法"
                   iconBg="bg-indigo-100"
+                />
+              </Link>
+              <Link
+                href="/current-events"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<Newspaper className="text-orange-600" />}
+                  title="時事問題"
+                  desc="最新の委員会情報や世界遺産ニュース"
+                  iconBg="bg-orange-100"
                 />
               </Link>
               <Link
@@ -219,6 +231,12 @@ export default function Home() {
       <QuizSettingsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        category="all"
+      />
+      <QuizSettingsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        category="all"
       />
     </div>
   );

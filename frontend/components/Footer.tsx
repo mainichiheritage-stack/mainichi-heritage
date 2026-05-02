@@ -8,6 +8,7 @@ import QuizSettingsModal from "./QuizSettingsModal";
 const FOOTER_LINKS = {
   learning: [
     { label: "世界遺産検定とは", href: "/about-exam" },
+    { label: "時事", href: "/current-events" },
     { label: "基礎知識", href: "/basic" },
     { label: "世界遺産一覧", href: "/heritages" },
   ],
@@ -139,6 +140,7 @@ export default function Footer() {
       <QuizSettingsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        category="all"
       />
     </footer>
   );

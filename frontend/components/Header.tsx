@@ -136,6 +136,7 @@ export default function Header() {
       <QuizSettingsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        category={"all"}
       />
     </>
   );

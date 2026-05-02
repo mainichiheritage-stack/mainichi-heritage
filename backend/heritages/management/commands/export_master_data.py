@@ -59,7 +59,7 @@ class Command(BaseCommand):
         for q in Quiz.objects.all().order_by('code'):
             quizzes.append({
                 "code": q.code,
-                "heritage_code": q.heritage.code, # 親のIDではなくcode
+                "heritage_code": q.heritage.code if q.heritage else None,
                 "question": q.question,
                 "choice_correct": q.choice_correct,
                 "choice_distractor1": q.choice_distractor1,

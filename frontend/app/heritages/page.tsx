@@ -46,6 +46,8 @@ function HeritageListContent() {
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [selectedQuizHeritageCode, setSelectedQuizHeritageCode] =
     useState<string>("");
+  const [selectedQuizHeritageName, setSelectedQuizHeritageName] =
+    useState<string>("");
 
   // --- データ取得ロジック ---
   const fetchHeritages = useCallback(async () => {
@@ -108,9 +110,14 @@ function HeritageListContent() {
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
-  const handleQuizClick = (e: React.MouseEvent, heritageCode: string) => {
+  const handleQuizClick = (
+    e: React.MouseEvent,
+    heritageCode: string,
+    heritageName: string,
+  ) => {
     e.stopPropagation();
     setSelectedQuizHeritageCode(heritageCode);
+    setSelectedQuizHeritageName(heritageName);
     setIsQuizModalOpen(true);
   };
 
@@ -377,7 +384,7 @@ function HeritageListContent() {
                     {h.catchphrase}
                   </p>
                   <button
-                    onClick={(e) => handleQuizClick(e, h.code)}
+                    onClick={(e) => handleQuizClick(e, h.code, h.name)}
                     className="mt-auto w-full py-2 md:py-2.5 bg-blue-50 text-blue-600 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold flex items-center justify-center gap-1 md:gap-2 hover:bg-blue-600 hover:text-white transition-all border border-blue-100 active:scale-[0.98]"
                   >
                     <PlayCircle className="w-3 h-3 md:w-4 md:h-4" />
@@ -415,7 +422,9 @@ function HeritageListContent() {
       <QuizSettingsModal
         isOpen={isQuizModalOpen}
         onClose={() => setIsQuizModalOpen(false)}
-        heritageCode={selectedQuizHeritageCode}
+        code={selectedQuizHeritageCode}
+        questionTitle={selectedQuizHeritageName}
+        category={"h"}
       />
 
       {/* 詳細モーダル */}
