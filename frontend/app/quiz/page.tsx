@@ -316,7 +316,7 @@ function QuizContent() {
             <div
               className="h-full bg-blue-500 transition-all duration-300"
               style={{
-                width: `${((currentIndex + 1) / quizzes.length) * 100}%`,
+                width: `${(currentIndex / quizzes.length) * 100}%`,
               }}
             ></div>
           </div>
