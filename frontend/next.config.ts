@@ -3,6 +3,13 @@ import * as AxiomConfig from "next-axiom/dist/config";
 
 type WithAxiomFn = (config: NextConfig) => NextConfig;
 
+interface AxiomModule {
+  withAxiom?: WithAxiomFn;
+  default?: {
+    withAxiom?: WithAxiomFn;
+  };
+}
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -16,6 +23,15 @@ const nextConfig: NextConfig = {
         hostname: "gfycov7pwc6weila.public.blob.vercel-storage.com",
       },
     ],
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/_axiom/logs",
+        destination: "/api/axiom",
+      },
+    ];
   },
 };
 
@@ -31,10 +47,10 @@ if (process.env.NODE_ENV === "development") {
   };
 }
 
-const axiomModule = AxiomConfig as unknown as Record<string, WithAxiomFn>;
-const withAxiom = axiomModule.withAxiom;
+const axiomModule = AxiomConfig as unknown as AxiomModule;
 
-// withAxiom が存在する場合のみ実行、そうでなければ nextConfig をそのまま返す
+const withAxiom = axiomModule.withAxiom ?? axiomModule.default?.withAxiom;
+
 const finalConfig =
   typeof withAxiom === "function" ? withAxiom(nextConfig) : nextConfig;
 
