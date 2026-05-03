@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react"; // Suspenseを追加
+import { useEffect, useState, useCallback, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Heritage, Criterion } from "../types";
@@ -20,6 +20,8 @@ import {
 import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
 import { Pagination } from "../../components/Pagination";
+import { log } from "@/utils/logger";
+import { LOG_MESSAGES } from "@/constants/messages";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -52,18 +54,32 @@ function HeritageListContent() {
   // --- データ取得ロジック ---
   const fetchHeritages = useCallback(async () => {
     setLoading(true);
+    let url = "";
+
     try {
       const categoryParam =
         queryCategory !== "0" ? `&category=${queryCategory}` : "";
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/heritages/?page=${queryPage}&search=${encodeURIComponent(querySearch)}${categoryParam}`;
+      url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/heritages/?page=${queryPage}&search=${encodeURIComponent(querySearch)}${categoryParam}`;
 
       const res = await fetch(url);
       const data = await res.json();
 
       setHeritages(data.results || []);
       setTotalCount(data.count || 0);
+
+      if (!data.count || data.count === 0) {
+        log.warn(LOG_MESSAGES.WARN.NOT_FOUND_HERITAGES, {
+          querySearch,
+          queryCategory,
+          queryPage,
+          url,
+        });
+      }
     } catch (err) {
-      console.error("世界遺産一覧の取得に失敗しました：", err);
+      log.error(LOG_MESSAGES.ERROR.FAILED_HERITAGE_FETCH, {
+        error: err,
+        url,
+      });
     } finally {
       setLoading(false);
     }

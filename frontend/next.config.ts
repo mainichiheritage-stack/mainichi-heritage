@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withAxiom } from "next-axiom";
 
 const nextConfig: NextConfig = {
   // 画像最適化の設定
@@ -30,4 +31,6 @@ if (process.env.NODE_ENV === "development") {
   };
 }
 
-export default nextConfig;
+export default withAxiom(nextConfig, {
+  logInDev: true,
+});
