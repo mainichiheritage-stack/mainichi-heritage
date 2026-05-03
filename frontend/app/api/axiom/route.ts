@@ -1,8 +1,11 @@
-import { AxiomRequest, withAxiom } from "next-axiom";
+import { log } from "next-axiom";
+import type { NextRequest } from "next/server";
 
-export const POST = withAxiom(async (req: AxiomRequest) => {
-  await req.log.flush();
-  return new Response(null, { status: 204 });
-});
+interface AxiomLoggerWithHandler {
+  handler: (req: NextRequest) => Promise<Response> | Response;
+}
+
+// as unknown を経由することで、ESLintの any チェックを回避しつつキャストします
+export const POST = (log as unknown as AxiomLoggerWithHandler).handler;
 
 export const runtime = "edge";
