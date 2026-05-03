@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/_axiom/logs",
+        source: "/_axiom/logs/:path*",
         destination: "/api/axiom",
       },
     ];
