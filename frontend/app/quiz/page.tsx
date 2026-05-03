@@ -21,6 +21,8 @@ import {
   Star,
   AlertCircle,
 } from "lucide-react";
+import { log } from "@/utils/logger";
+import { LOG_MESSAGES } from "@/constants/messages";
 
 interface QuizData {
   id: number;
@@ -102,9 +104,13 @@ function QuizContent() {
       clearTimeout(timeoutId);
 
       if (err instanceof Error && err.name === "AbortError") {
-        console.warn("10秒経過したため通信を中断しました");
+        log.warn(LOG_MESSAGES.WARN.QUIZ_TIMEOUT, {
+          error: err,
+        });
       } else {
-        console.error("クイズの取得に失敗しました：", err);
+        log.error(LOG_MESSAGES.ERROR.FAILED_QUIZ_FETCH, {
+          error: err,
+        });
       }
 
       setError("error");

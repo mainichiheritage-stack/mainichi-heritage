@@ -16,6 +16,8 @@ import { FeatureCard } from "@/components/FeatureCard";
 import QuizSettingsModal from "@/components/QuizSettingsModal";
 import { NotificationItem } from "./types";
 import NotificationModal from "@/components/NotificationModal";
+import { log } from "@/utils/logger";
+import { LOG_MESSAGES } from "@/constants/messages";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,7 +42,9 @@ export default function Home() {
         const data = await response.json();
         setNotifications(Array.isArray(data) ? data : data.results || []);
       } catch (error) {
-        console.error("お知らせの取得に失敗しました：", error);
+        log.error(LOG_MESSAGES.ERROR.FAILED_NOTIFICATION_FETCH, {
+          error,
+        });
       }
     };
 

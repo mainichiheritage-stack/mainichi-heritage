@@ -18,12 +18,6 @@ export default function QuizStartButton({
   variant = "pc",
 }: QuizStartButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log("QuizStartButton props:", {
-    category,
-    code,
-    questionTitle,
-    variant,
-  });
 
   const renderButton = () => {
     if (variant === "pc") {

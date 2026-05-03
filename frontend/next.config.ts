@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import * as AxiomConfig from "next-axiom/dist/config";
+
+type WithAxiomFn = (config: NextConfig) => NextConfig;
 
 const nextConfig: NextConfig = {
-  // 画像最適化の設定
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "publicdomainq.net" },
@@ -17,17 +19,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-// 開発環境（ローカル/Docker）のときだけ webpack プロパティを動的に追加
 if (process.env.NODE_ENV === "development") {
   nextConfig.webpack = (config, { dev, isServer }) => {
     if (dev && !isServer) {
       config.watchOptions = {
-        poll: 500, // 0.5秒ごとにファイルをチェック
-        aggregateTimeout: 300, // 変更後300ms待ってから再ビルド
+        poll: 500,
+        aggregateTimeout: 300,
       };
     }
     return config;
   };
 }
 
-export default nextConfig;
+const axiomModule = AxiomConfig as unknown as Record<string, WithAxiomFn>;
+const withAxiom = axiomModule.withAxiom;
+
+// withAxiom が存在する場合のみ実行、そうでなければ nextConfig をそのまま返す
+const finalConfig =
+  typeof withAxiom === "function" ? withAxiom(nextConfig) : nextConfig;
+
+export default finalConfig;
