@@ -1,1 +1,1 @@
-export { log } from "next-axiom";
+export { report as POST } from "next-axiom";
