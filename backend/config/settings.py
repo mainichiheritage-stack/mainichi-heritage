@@ -1,7 +1,9 @@
 import os
+import dj_database_url
+
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,8 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     'heritages',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +66,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# 独自のユーザモデル使用
+AUTH_USER_MODEL = 'accounts.User'
 
 # CORS / CSRF Settings
 CORS_ALLOW_ALL_ORIGINS = False
@@ -93,6 +100,9 @@ USE_TZ = True
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 12,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
 
 # Templates
@@ -177,3 +187,13 @@ if IS_PRODUCTION and AXIOM_TOKEN:
         LOGGING['root']['handlers'].append('axiom')
     except Exception as e:
         print(f"Axiom setup error: {e}")
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), # 1時間有効
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),    # 7日間有効
+    'ROTATE_REFRESH_TOKENS': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}

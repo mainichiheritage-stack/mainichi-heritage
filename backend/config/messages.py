@@ -10,3 +10,9 @@ class LogMsg:
     
     # システム
     AXIOM_ENABLED = "Axiom logging enabled"
+
+    # 認証
+    AUTH_REGISTER_SUCCESS = "User registration successful"
+    AUTH_REGISTER_FAILED = "User registration failed"
+    AUTH_LOGIN_SUCCESS = "User login successful"
+    AUTH_LOGIN_FAILED = "User login failed"
