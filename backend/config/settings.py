@@ -117,12 +117,63 @@ AUTH_PASSWORD_VALIDATORS = [
     for v in ['UserAttributeSimilarityValidator', 'MinimumLengthValidator', 'CommonPasswordValidator', 'NumericPasswordValidator']
 ]
 
+# --- Axiom Logging Settings ---
+AXIOM_TOKEN = os.getenv("AXIOM_TOKEN")
+AXIOM_DATASET = os.getenv("AXIOM_DATASET")
+AXIOM_ORG_ID = os.getenv("AXIOM_ORG_ID")
+
+def get_axiom_handler():
+    from axiom_py import Client
+    from axiom_py.logging import AxiomHandler
+    import logging
+
+    # AxiomのUI用にフィールドを整形するフィルター
+    class AxiomUiFilter(logging.Filter):
+        def filter(self, record):
+            # Axiomが色付けに使用する 'level' フィールドを追加
+            # 例: 'WARNING' -> 'warning', 'INFO' -> 'info'
+            record.level = record.levelname.lower()
+            return True
+
+    client = Client(AXIOM_TOKEN, AXIOM_ORG_ID)
+    handler = AxiomHandler(client, AXIOM_DATASET)
+    
+    # フィルターをハンドラに追加
+    handler.addFilter(AxiomUiFilter())
+    
+    return handler
+
+# ベース設定
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {'console': {'class': 'logging.StreamHandler'}},
-    'root': {'handlers': ['console'], 'level': 'INFO' if IS_PRODUCTION else 'DEBUG'},
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
     'loggers': {
-        'django.security': {'handlers': ['console'], 'level': 'INFO', 'propagate': True},
+        'django.utils.autoreload': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO' if IS_PRODUCTION else 'DEBUG',
     },
 }
+
+# Axiomハンドラ（ローカル環境からAxiomにログ出力したい場合には条件をAXIOM_TOKENだけにする）
+# if AXIOM_TOKEN:
+if IS_PRODUCTION and AXIOM_TOKEN:
+    try:
+        # '()' を使うことで、関数を呼び出して直接ハンドラを取得
+        LOGGING['handlers']['axiom'] = {
+            'level': 'INFO',
+            '()': get_axiom_handler,
+        }
+        LOGGING['root']['handlers'].append('axiom')
+    except Exception as e:
+        print(f"Axiom setup error: {e}")

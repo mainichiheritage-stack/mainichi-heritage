@@ -1,10 +1,14 @@
 import re
+import logging
 
 from rest_framework import viewsets , filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Heritage , Quiz , Notification
 from .serializers import HeritageSerializer , QuizSerializer , NotificationSerializer
 from django.utils import timezone
+from config.messages import LogMsg
+
+logger = logging.getLogger(__name__)
 
 class HeritageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Heritage.objects.all().order_by('-code')
@@ -43,7 +47,18 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
         # コード
         code = self.request.query_params.get('code')
 
-        # --- クエリセット--- 
+        # デバッグ用（取得パラメータの確認）
+        logger.debug(
+            f'{LogMsg.QUIZ_REQUEST_RECEIVED}：difficulty={difficulty}, count={count}, category={category}, code={code}',
+            extra={
+                "category": category, 
+                "difficulty": difficulty, 
+                "count_requested": count,
+                "code_param": code
+            }
+        )
+
+        # --- クエリセット --- 
         # 共通
         queryset = Quiz.objects.filter(difficulty=difficulty)
 
@@ -53,24 +68,43 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(code__startswith='q-g')
         
         elif category == 'c':
-            # 時事：q-c で始まり、かつ年指定があれば絞る
-            queryset = queryset.filter(code__startswith=f'{code}')
+            if code:
+                queryset = queryset.filter(code__startswith=f'{code}')
+            else:
+                logger.warning(LogMsg.MISSING_CATEGORY_PARAMS)
 
         elif category == 'h':
-            # 世界遺産：遺産IDが紐付いているもの
             queryset = queryset.exclude(heritage__isnull=True)
             if code and code != '0':
                 match = re.search(r'\d+', code)
                 if match:
                     heritage_num = match.group()
                     queryset = queryset.filter(code__startswith=f'q-h-{heritage_num}')
-        
-        # デバッグ: 実際に発行されるクエリの数を確認
-        print(f"DEBUG: category={category}, count={queryset.count()}")
+                # else:
+                #     logger.info(f"Invalid code format for heritage: {code}")
 
-        # ランダムに並び替えて制限
+        final_count = queryset.count()
+        if final_count == 0:
+            logger.warning(
+                f'{LogMsg.QUIZ_NOT_FOUND}：difficulty={difficulty}, count={count}, category={category}, code={code}',
+                extra={
+                    "category": category,
+                    "difficulty": difficulty,
+                    "code_used": code,
+                    "level": "warning"
+                }
+            )
+        else:
+            # 正常終了時は DEBUG で結果数だけ記録
+            logger.debug(
+                f'{LogMsg.QUIZ_QUERY_SUCCESS}：difficulty={difficulty}, count={count}, category={category}, code={code}, found_count={final_count}',
+                extra={
+                    "found_count": final_count,
+                    "category": category
+                }
+            )
+
         return queryset.order_by('?')[:count]
-
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer
