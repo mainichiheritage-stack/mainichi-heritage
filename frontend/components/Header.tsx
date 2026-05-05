@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import QuizSettingsModal from "./QuizSettingsModal";
 import { useAuth } from "@/context/AuthContext";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
 const NAV_ITEMS = [
   {
@@ -33,8 +34,9 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const { isLoggedIn, nickname, logout, isMounted } = useAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isQuizSettingsModalOpen, setIsQuizSettingsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   return (
     <>
@@ -69,7 +71,7 @@ export default function Header() {
               ))}
               <li>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => setIsQuizSettingsModalOpen(true)}
                   className="text-slate-500 transition-colors hover:text-blue-600 font-bold"
                 >
                   4択クイズ
@@ -92,7 +94,7 @@ export default function Header() {
                         </span>
                       </div>
                       <button
-                        onClick={logout}
+                        onClick={() => setIsConfirmModalOpen(true)}
                         className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-red-50 hover:text-red-600 hover:border-red-100 active:scale-95"
                       >
                         <LogOut className="w-4 h-4" />
@@ -185,7 +187,7 @@ export default function Header() {
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
-                  setIsModalOpen(true);
+                  setIsConfirmModalOpen(true);
                 }}
                 className={`flex items-center gap-4 p-4 rounded-xl text-slate-600 font-bold hover:bg-slate-50 active:bg-slate-100 transition-all text-left
                   ${
@@ -208,7 +210,7 @@ export default function Header() {
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
-                          logout();
+                          setIsConfirmModalOpen(true);
                         }}
                         className={`w-full flex items-center gap-4 p-4 rounded-xl text-red-600 font-bold hover:bg-red-50 active:bg-red-100 transition-all text-left
                           ${
@@ -252,9 +254,19 @@ export default function Header() {
       </header>
 
       <QuizSettingsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isQuizSettingsModalOpen}
+        onClose={() => setIsQuizSettingsModalOpen(false)}
         category={"all"}
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={logout}
+        title="ログアウトしますか？"
+        description="セッションを終了してログイン画面に戻ります。学習データは保存されていますのでご安心ください。"
+        confirmText="ログアウト"
+        variant="danger"
       />
     </>
   );
