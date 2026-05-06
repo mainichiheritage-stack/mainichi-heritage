@@ -18,12 +18,14 @@ import { NotificationItem } from "./types";
 import NotificationModal from "@/components/NotificationModal";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [selectedNotification, setSelectedNotification] =
     useState<NotificationItem | null>(null);
+  const { setIsNavigating } = useAuth();
 
   const CATEGORY_MAP: { [key: number]: { label: string; color: string } } = {
     1: { label: "重要", color: "bg-red-500" },
@@ -45,10 +47,15 @@ export default function Home() {
         log.error(LOG_MESSAGES.ERROR.FAILED_NOTIFICATION_FETCH, {
           error,
         });
+      } finally {
+        setIsNavigating(null);
       }
     };
 
     fetchNotifications();
+
+    // 念のため、クリーンアップ関数でナビゲーション状態をリセット
+    return () => setIsNavigating(null);
   }, []);
 
   return (

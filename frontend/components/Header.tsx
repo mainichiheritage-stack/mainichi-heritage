@@ -17,6 +17,8 @@ import { useState } from "react";
 import QuizSettingsModal from "./QuizSettingsModal";
 import { useAuth } from "@/context/AuthContext";
 import ConfirmModal from "@/components/common/ConfirmModal";
+import { log } from "@/utils/logger";
+import Toast from "@/components/common/Toast";
 
 const NAV_ITEMS = [
   {
@@ -33,10 +35,31 @@ const NAV_ITEMS = [
 ];
 
 export default function Header() {
-  const { isLoggedIn, nickname, logout, isMounted } = useAuth();
+  const { isLoggedIn, nickname, logout, isMounted, setIsNavigating } =
+    useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isQuizSettingsModalOpen, setIsQuizSettingsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    setIsConfirmModalOpen(false);
+    setIsNavigating("ログアウト中です...");
+
+    try {
+      await logout();
+    } catch (error) {
+      log.error("Logout failed:", {
+        error,
+        localStorageState: { ...localStorage },
+      });
+
+      setIsNavigating(null);
+      setErrorMsg(
+        "ログアウトに失敗しました。接続状況を確認して、もう一度お試しください。",
+      );
+    }
+  };
 
   return (
     <>
@@ -262,11 +285,17 @@ export default function Header() {
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        onConfirm={logout}
+        onConfirm={handleLogout}
         title="ログアウトしますか？"
         description="セッションを終了してログイン画面に戻ります。学習データは保存されていますのでご安心ください。"
         confirmText="ログアウト"
         variant="danger"
+      />
+
+      <Toast
+        isVisible={!!errorMsg}
+        message={errorMsg || ""}
+        onClose={() => setErrorMsg(null)}
       />
     </>
   );

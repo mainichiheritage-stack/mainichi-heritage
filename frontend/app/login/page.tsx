@@ -9,7 +9,6 @@ import {
   Lock,
   User,
   ArrowRight,
-  Loader2,
   AlertCircle,
   HelpCircle,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
 import { loginSchema, authSchema } from "@/lib/validation";
+import Loading from "@/components/common/Loading";
 
 type FormSubmitEvent = ComponentProps<"form">["onSubmit"];
 
@@ -26,7 +26,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useAuth();
+
+  const { login, isLoading: authLoading, setIsNavigating } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -54,6 +55,7 @@ export default function LoginPage() {
     }
   };
 
+  // 実際の送信処理（API通信）
   const handleActualSubmit = async () => {
     setIsConfirming(false);
     setIsLoading(true);
@@ -73,32 +75,30 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (typeof data === "object" && data !== null) {
-          // メッセージを配列化して結合
-          let messages = Object.values(data).flat() as string[];
+        // エラーメッセージの日本語置換ロジック
+        const translateError = (msg: string) =>
+          msg === "No active account found with the given credentials"
+            ? "メールアドレスまたはパスワードが正しくありません"
+            : msg;
 
-          // エラーメッセージの日本語置換
-          messages = messages.map((msg) => {
-            if (msg === "No active account found with the given credentials") {
-              return "メールアドレスまたはパスワードが正しくありません";
-            }
-            return msg;
-          });
+        if (typeof data === "object" && data !== null) {
+          let messages = Object.values(data).flat() as string[];
+          messages = messages.map(translateError);
 
           if (messages.length > 0) throw new Error(messages.join(" / "));
         }
 
-        // detailに直接エラー文が入っているパターン
-        const fallbackMsg =
-          data.detail === "No active account found with the given credentials"
-            ? "メールアドレスまたはパスワードが正しくありません"
-            : data.detail || data.message || "入力内容に誤りがあります";
-
+        const fallbackMsg = translateError(
+          data.detail || data.message || "入力内容に誤りがあります",
+        );
         throw new Error(fallbackMsg);
       }
 
+      // 成功時：トークン保存とリダイレクト
       if (data.access && data.refresh) {
+        setIsNavigating("ログイン中です...");
         login(data.access, data.refresh, data.nickname || data.email);
+
         router.push("/");
       }
     } catch (err: unknown) {
@@ -114,8 +114,21 @@ export default function LoginPage() {
     }
   };
 
+  if (authLoading) {
+    return <Loading fullScreen />;
+  }
+
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50 px-6 py-12">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50 px-6 py-12 relative">
+      {isLoading && (
+        <Loading
+          fullScreen
+          message={
+            isLogin ? "ログインしています..." : "アカウントを作成しています..."
+          }
+        />
+      )}
+
       <div className="w-full max-w-md">
         {/* ロゴ・タイトル */}
         <div className="text-center mb-8">
@@ -132,11 +145,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* フォームカード */}
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-8 border border-slate-100">
           <form
             onSubmit={handlePreSubmit}
-            className="space-gap-5 flex flex-col gap-5"
+            className="flex flex-col gap-5"
             noValidate
           >
             {!isLogin && (
@@ -234,14 +246,8 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-slate-800 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
             >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  {isLogin ? "ログイン" : "アカウント作成"}
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
+              {isLogin ? "ログイン" : "アカウント作成"}
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
@@ -267,7 +273,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* 戻るリンク */}
         <div className="mt-8 text-center">
           <Link
             href="/"
@@ -277,6 +282,7 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+
       {isConfirming && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-[32px] p-8 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
