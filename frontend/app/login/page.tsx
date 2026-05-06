@@ -3,10 +3,19 @@
 import { useState, ComponentProps } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Landmark, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Landmark,
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { loginSchema, authSchema } from "@/lib/validation";
 
 type FormSubmitEvent = ComponentProps<"form">["onSubmit"];
 
@@ -27,8 +36,18 @@ export default function LoginPage() {
   const handleSubmit: FormSubmitEvent = async (e) => {
     if (e) e.preventDefault();
 
-    setIsLoading(true);
     setError("");
+
+    // バリデーション
+    const schema = isLogin ? loginSchema : authSchema;
+    const validationResult = schema.safeParse(formData);
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0].message;
+      setError(firstError);
+      return;
+    }
+
+    setIsLoading(true);
 
     const endpoint = isLogin ? "/auth/login/" : "/auth/register/";
 
@@ -45,17 +64,30 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || data.message || "エラーが発生しました");
+        if (typeof data === "object" && data !== null) {
+          // すべてのエラーメッセージを1つの配列にフラット化
+          const messages = Object.values(data).flat();
+          if (messages.length > 0) {
+            throw new Error(messages.join(" / "));
+          }
+        }
+        throw new Error(
+          data.detail || data.message || "入力内容に誤りがあります",
+        );
       }
 
-      if (isLogin) {
-        // ログイン成功
-        login(data.access, data.refresh, data.nickname);
+      if (data.access && data.refresh) {
+        login(data.access, data.refresh, data.nickname || data.email);
+        if (!isLogin) {
+          console.log("Welcome to まにち世界遺産!");
+        }
+
         router.push("/");
       } else {
-        // 新規登録成功
-        alert("登録が完了しました。ログインしてください。");
-        setIsLogin(true);
+        if (!isLogin) {
+          alert("登録が完了しました。ログインしてください。");
+          setIsLogin(true);
+        }
       }
     } catch (err: unknown) {
       const errorMessage =
@@ -95,6 +127,7 @@ export default function LoginPage() {
           <form
             onSubmit={handleSubmit}
             className="space-gap-5 flex flex-col gap-5"
+            noValidate
           >
             {!isLogin && (
               <div className="space-y-2">
@@ -180,9 +213,10 @@ export default function LoginPage() {
             )}
 
             {error && (
-              <p className="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-lg border border-red-100">
-                {error}
-              </p>
+              <div className="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-lg border border-red-100 flex items-start gap-2 animate-shake">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{error}</span>
+              </div>
             )}
 
             <button
@@ -207,6 +241,12 @@ export default function LoginPage() {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError("");
+                setFormData({
+                  email: "",
+                  password: "",
+                  password_confirm: "",
+                  nickname: "",
+                });
               }}
               className="text-sm font-bold text-slate-500 hover:text-blue-600 transition"
             >
