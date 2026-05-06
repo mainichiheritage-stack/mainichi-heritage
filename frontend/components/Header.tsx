@@ -108,14 +108,17 @@ export default function Header() {
                 <>
                   {isLoggedIn ? (
                     <>
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                          <User className="w-4 h-4 text-slate-600" />
+                      <Link
+                        href="/mypage"
+                        className="flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                          <User className="w-4 h-4 text-slate-600 group-hover:text-blue-600" />
                         </div>
                         <span className="text-sm font-bold">
                           {nickname} さん
                         </span>
-                      </div>
+                      </Link>
                       <button
                         onClick={() => setIsConfirmModalOpen(true)}
                         className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-red-50 hover:text-red-600 hover:border-red-100 active:scale-95"
@@ -173,19 +176,23 @@ export default function Header() {
             <nav className="flex flex-col p-2">
               {/* ユーザー情報表示（スマホ版）*/}
               {isMounted && isLoggedIn && (
-                <div className="flex items-center gap-4 p-4 mb-2 bg-slate-50 rounded-xl">
+                <Link
+                  href="/mypage"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-4 p-4 mb-2 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                >
                   <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center">
                     <User className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500 font-bold">
-                      ログイン中
+                      マイページを表示
                     </p>
                     <p className="text-sm font-bold text-slate-800">
                       {nickname} さん
                     </p>
                   </div>
-                </div>
+                </Link>
               )}
 
               {NAV_ITEMS.map((item, i) => (

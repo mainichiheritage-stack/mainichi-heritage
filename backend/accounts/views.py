@@ -6,14 +6,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
+from rest_framework import generics, status, serializers
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.throttling import AnonRateThrottle
-
 from config.messages import LogMsg
 from .serializers import MyTokenObtainPairSerializer, RegisterSerializer
 
@@ -167,3 +166,21 @@ class PasswordResetConfirmView(APIView):
         except Exception as e:
             logger.error(f"パスワード再設定中に例外発生：{str(e)}")
             return Response({"error": "サーバーエラーが発生しました"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    マイページ表示用のシリアライザー
+    """
+    class Meta:
+        model = User 
+        fields = ['id', 'email', 'nickname', 'created_at']
+
+class MyProfileView(APIView):
+    """
+    ログイン中のユーザー自身の情報を返すView
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
