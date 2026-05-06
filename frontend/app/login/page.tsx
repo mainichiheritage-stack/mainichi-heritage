@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { log } from "@/utils/logger";
@@ -23,6 +24,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
 
@@ -33,12 +35,10 @@ export default function LoginPage() {
     nickname: "",
   });
 
-  const handleSubmit: FormSubmitEvent = async (e) => {
+  const handlePreSubmit: FormSubmitEvent = (e) => {
     if (e) e.preventDefault();
-
     setError("");
 
-    // バリデーション
     const schema = isLogin ? loginSchema : authSchema;
     const validationResult = schema.safeParse(formData);
     if (!validationResult.success) {
@@ -47,6 +47,16 @@ export default function LoginPage() {
       return;
     }
 
+    // ログイン時は確認不要で即実行、新規登録時のみ確認モーダルを出す
+    if (isLogin) {
+      handleActualSubmit();
+    } else {
+      setIsConfirming(true);
+    }
+  };
+
+  const handleActualSubmit = async () => {
+    setIsConfirming(false);
     setIsLoading(true);
 
     const endpoint = isLogin ? "/auth/login/" : "/auth/register/";
@@ -65,11 +75,8 @@ export default function LoginPage() {
 
       if (!response.ok) {
         if (typeof data === "object" && data !== null) {
-          // すべてのエラーメッセージを1つの配列にフラット化
           const messages = Object.values(data).flat();
-          if (messages.length > 0) {
-            throw new Error(messages.join(" / "));
-          }
+          if (messages.length > 0) throw new Error(messages.join(" / "));
         }
         throw new Error(
           data.detail || data.message || "入力内容に誤りがあります",
@@ -78,26 +85,15 @@ export default function LoginPage() {
 
       if (data.access && data.refresh) {
         login(data.access, data.refresh, data.nickname || data.email);
-        if (!isLogin) {
-          console.log("Welcome to まにち世界遺産!");
-        }
-
         router.push("/");
-      } else {
-        if (!isLogin) {
-          alert("登録が完了しました。ログインしてください。");
-          setIsLogin(true);
-        }
       }
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : LOG_MESSAGES.ERROR.AUTH_FAILED;
       setError(errorMessage);
-
       log.error(LOG_MESSAGES.ERROR.AUTH_FAILED, {
         error: err,
         mode: isLogin ? "login" : "register",
-        email: formData.email,
       });
     } finally {
       setIsLoading(false);
@@ -125,7 +121,7 @@ export default function LoginPage() {
         {/* フォームカード */}
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-8 border border-slate-100">
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handlePreSubmit}
             className="space-gap-5 flex flex-col gap-5"
             noValidate
           >
@@ -267,6 +263,50 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+      {isConfirming && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[32px] p-8 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-blue-600 mb-6">
+              <HelpCircle size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800 mb-4">
+              登録内容の確認
+            </h2>
+
+            <div className="text-left space-y-3 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  ニックネーム
+                </p>
+                <p className="text-slate-700 font-medium">
+                  {formData.nickname}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  メールアドレス
+                </p>
+                <p className="text-slate-700 font-medium">{formData.email}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleActualSubmit}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-100"
+              >
+                この内容で登録する
+              </button>
+              <button
+                onClick={() => setIsConfirming(false)}
+                className="w-full bg-white hover:bg-slate-50 text-slate-500 font-bold py-3 rounded-2xl transition-all"
+              >
+                修正する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
