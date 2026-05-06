@@ -47,7 +47,6 @@ export default function LoginPage() {
       return;
     }
 
-    // ログイン時は確認不要で即実行、新規登録時のみ確認モーダルを出す
     if (isLogin) {
       handleActualSubmit();
     } else {
@@ -75,12 +74,27 @@ export default function LoginPage() {
 
       if (!response.ok) {
         if (typeof data === "object" && data !== null) {
-          const messages = Object.values(data).flat();
+          // メッセージを配列化して結合
+          let messages = Object.values(data).flat() as string[];
+
+          // エラーメッセージの日本語置換
+          messages = messages.map((msg) => {
+            if (msg === "No active account found with the given credentials") {
+              return "メールアドレスまたはパスワードが正しくありません";
+            }
+            return msg;
+          });
+
           if (messages.length > 0) throw new Error(messages.join(" / "));
         }
-        throw new Error(
-          data.detail || data.message || "入力内容に誤りがあります",
-        );
+
+        // detailに直接エラー文が入っているパターン
+        const fallbackMsg =
+          data.detail === "No active account found with the given credentials"
+            ? "メールアドレスまたはパスワードが正しくありません"
+            : data.detail || data.message || "入力内容に誤りがあります";
+
+        throw new Error(fallbackMsg);
       }
 
       if (data.access && data.refresh) {
