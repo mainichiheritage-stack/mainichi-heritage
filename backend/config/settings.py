@@ -96,6 +96,25 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# --- 共通のSMTP設定 ---
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+# --- 環境ごとの動的切り替え ---
+if DEBUG:
+    # 開発モード: 実際には送らずコンソールに表示
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'Development <noreply@example.com>'
+    FRONTEND_URL = 'http://localhost:3000'
+else:
+    # 本番モード: SMTPサーバー経由で実際に送信
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    DEFAULT_FROM_EMAIL = f"まいにち世界遺産 <{EMAIL_HOST_USER}>"
+    FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://mainichi-heritage.com')
+
 # API Settings
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -103,6 +122,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_THROTTLE_RATES': {
+        'password_reset_limit': '3/minute',  # 1分間に3回まで
+    },
 }
 
 # Templates

@@ -162,7 +162,7 @@ export default function LoginPage() {
                     type="text"
                     required
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                    placeholder="世界遺産太郎"
+                    placeholder="例）mainichi-heritage"
                     value={formData.nickname}
                     onChange={(e) =>
                       setFormData({ ...formData, nickname: e.target.value })
@@ -208,6 +208,16 @@ export default function LoginPage() {
                   }
                 />
               </div>
+              {isLogin && (
+                <div className="text-right px-1">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    パスワードを忘れた場合はこちら
+                  </Link>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
