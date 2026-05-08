@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Heritage , Quiz , Notification , Criterion
+from .models import Heritage , Quiz , Notification , Criterion, QuizAnswerHistory
 
 class CriterionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,3 +48,15 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'title', 'content', 'category', 'category_display', 'published_at']
+
+class QuizAnswerHistorySerializer(serializers.ModelSerializer):
+    quiz_code = serializers.SlugRelatedField(
+        slug_field='code',
+        queryset=Quiz.objects.all(),
+        source='quiz'
+    )
+    is_correct = serializers.BooleanField(source='is_latest_correct')
+
+    class Meta:
+        model = QuizAnswerHistory
+        fields = ['quiz_code', 'is_correct']

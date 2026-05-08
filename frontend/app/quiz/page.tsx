@@ -23,9 +23,11 @@ import {
 } from "lucide-react";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { authenticatedFetch } from "@/utils/api";
 
 interface QuizData {
   id: number;
+  code: string;
   heritage_name: string;
   question: string;
   tips: string;
@@ -34,6 +36,10 @@ interface QuizData {
   choice_distractor2: string;
   choice_distractor3: string;
   explanation: string;
+}
+interface QuizAnswerResult {
+  quiz_code: string;
+  is_correct: boolean;
 }
 
 function QuizContent() {
@@ -52,6 +58,7 @@ function QuizContent() {
   const [showExitModal, setShowExitModal] = useState(false);
 
   const hasFetched = useRef(false);
+  const hasSaved = useRef(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTips, setShowTips] = useState(false);
@@ -61,6 +68,8 @@ function QuizContent() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
+  const [answerHistory, setAnswerHistory] = useState<QuizAnswerResult[]>([]); // 回答履歴
+
   // --- クイズ読み込み関数 ---
   const loadQuizzes = useCallback(async () => {
     setIsLoading(true);
@@ -68,9 +77,10 @@ function QuizContent() {
     setCurrentIndex(0);
     setScore(0);
     setIsFinished(false);
+    setAnswerHistory([]);
+    hasSaved.current = false;
     window.scrollTo(0, 0);
 
-    // 10秒のタイムアウト設定
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     const query = new URLSearchParams({
@@ -102,22 +112,16 @@ function QuizContent() {
       }
     } catch (err: unknown) {
       clearTimeout(timeoutId);
-
       if (err instanceof Error && err.name === "AbortError") {
-        log.warn(LOG_MESSAGES.WARN.QUIZ_TIMEOUT, {
-          error: err,
-        });
+        log.warn(LOG_MESSAGES.WARN.QUIZ_TIMEOUT, { error: err });
       } else {
-        log.error(LOG_MESSAGES.ERROR.FAILED_QUIZ_FETCH, {
-          error: err,
-        });
+        log.error(LOG_MESSAGES.ERROR.FAILED_QUIZ_FETCH, { error: err });
       }
-
       setError("error");
     } finally {
       setIsLoading(false);
     }
-  }, [count, level, code]);
+  }, [count, level, code, category]);
 
   useEffect(() => {
     if (hasFetched.current) return;
@@ -141,7 +145,44 @@ function QuizContent() {
     }
   }, [quizzes, currentIndex]);
 
-  // --- ローディング画面 ---
+  // クイズ終了時にupsertで回答履歴を保存
+  useEffect(() => {
+    if (isFinished && !hasSaved.current && answerHistory.length > 0) {
+      hasSaved.current = true; // 即座にフラグを立てて連打防止
+
+      const saveResults = async () => {
+        try {
+          // 認証トークン取得
+          const token = localStorage.getItem("access");
+          if (!token) {
+            console.warn("No access token found. Results will not be saved.");
+            return;
+          }
+
+          const response = await authenticatedFetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/quiz-answer-histories/bulk-upsert/`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(answerHistory),
+            },
+          );
+
+          if (!response.ok) throw new Error("Failed to save quiz results");
+          log.info("Quiz results saved successfully");
+        } catch (err) {
+          log.error("Failed to save quiz history", { error: err });
+          hasSaved.current = false;
+        }
+      };
+
+      saveResults();
+    }
+  }, [isFinished, answerHistory]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -153,7 +194,6 @@ function QuizContent() {
     );
   }
 
-  // --- エラー・0件時・タイムアウト ---
   if (error || quizzes.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
@@ -194,9 +234,17 @@ function QuizContent() {
 
   const handleAnswer = (choice: string) => {
     if (isAnswered) return;
+    const isCorrect = choice === currentQuiz.choice_correct;
+
+    // 履歴を保存
+    setAnswerHistory((prev) => [
+      ...prev,
+      { quiz_code: currentQuiz.code, is_correct: isCorrect },
+    ]);
+
     setSelectedChoice(choice);
     setIsAnswered(true);
-    if (choice === currentQuiz.choice_correct) setScore(score + 1);
+    if (isCorrect) setScore((prev) => prev + 1);
   };
 
   const nextQuestion = () => {
@@ -211,13 +259,11 @@ function QuizContent() {
 
   const getDisplayName = (heritageName: string | null) => {
     if (heritageName) return heritageName;
-
     if (category === "g") return "基礎知識（総論）";
     if (category === "c") return `時事問題`;
     return "基礎知識（総論）";
   };
 
-  // --- 結果画面 ---
   if (isFinished) {
     const accuracy = Math.round((score / quizzes.length) * 100);
     return (
@@ -272,7 +318,6 @@ function QuizContent() {
     );
   }
 
-  // --- クイズ本編 ---
   return (
     <div className="min-h-screen bg-slate-50 py-8 md:py-12 px-4">
       {showExitModal && (
@@ -289,7 +334,7 @@ function QuizContent() {
               クイズを中断しますか？
             </h3>
             <p className="text-slate-500 text-center text-sm mb-8 leading-relaxed">
-              これまでの回答スコアは保存されません。
+              中断すると、ここまでの正解状況は保存されません。
             </p>
             <div className="flex flex-col gap-3">
               <button
@@ -310,7 +355,6 @@ function QuizContent() {
       )}
 
       <div className="max-w-2xl mx-auto">
-        {/* 進捗バー */}
         <div className="mb-6 md:mb-8">
           <div className="flex justify-between text-sm font-bold text-slate-400 mb-2">
             <span>第 {currentIndex + 1} 問</span>
@@ -328,7 +372,6 @@ function QuizContent() {
           </div>
         </div>
 
-        {/* クイズカード */}
         <div
           className={`bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all ${isAnswered ? "pb-32 md:pb-8" : ""}`}
         >
@@ -376,7 +419,6 @@ function QuizContent() {
             })}
           </div>
 
-          {/* ヒント */}
           {!isAnswered && currentQuiz.tips && (
             <div className="mt-6 text-center">
               <button
@@ -401,7 +443,6 @@ function QuizContent() {
             </div>
           )}
 
-          {/* 解説と次へボタン */}
           {isAnswered && (
             <div className="mt-8 animate-in fade-in slide-in-from-bottom-4">
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4 text-sm leading-relaxed">
@@ -437,7 +478,7 @@ function QuizContent() {
             クイズを中断して戻る
           </button>
           <p className="text-[10px] text-slate-400">
-            ※学習データは保存されません
+            ※中断すると学習データは保存されません
           </p>
         </div>
       </div>

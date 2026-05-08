@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 
 LEVEL_CHOICES = [
@@ -167,3 +168,37 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.title
+
+class QuizAnswerHistory(models.Model):
+    """
+    ユーザーごとのクイズ回答履歴
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='quiz_histories'
+    )
+    quiz = models.ForeignKey(
+        'Quiz', 
+        to_field='code', 
+        db_column='quiz_code', 
+        on_delete=models.CASCADE
+    )
+    
+    is_latest_correct = models.BooleanField(default=False, verbose_name="直近で正解したか")
+    last_attempted_at = models.DateTimeField(auto_now=True, verbose_name="最終回答日時")
+
+    class Meta:
+        # 同じユーザーが同じ問題に複数のレコードを作らない
+        unique_together = ('user', 'quiz')
+        
+        # 検索の高速化：ユーザーごとの苦手問題（is_latest_correct=False）を引くためのインデックス
+        indexes = [
+            models.Index(fields=['user', 'is_latest_correct']),
+            models.Index(fields=['user', 'last_attempted_at']),
+        ]
+        verbose_name = "クイズ回答履歴"
+        verbose_name_plural = "クイズ回答履歴一覧"
+
+    def __str__(self):
+        return f"{self.user.nickname} - {self.quiz.code} ({self.is_latest_correct})"

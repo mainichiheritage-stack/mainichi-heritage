@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { log } from "@/utils/logger";
+import { authenticatedFetch } from "@/utils/api";
 
 interface User {
   id: string;
@@ -23,7 +24,7 @@ export default function MyPage() {
       }
 
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me/`,
           {
             headers: { Authorization: `Bearer ${token}` },

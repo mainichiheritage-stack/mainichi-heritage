@@ -1,12 +1,17 @@
 import re
 import logging
 
-from rest_framework import viewsets , filters
-from django_filters.rest_framework import DjangoFilterBackend
-from .models import Heritage , Quiz , Notification
-from .serializers import HeritageSerializer , QuizSerializer , NotificationSerializer
-from django.utils import timezone
 from config.messages import LogMsg
+from django.db.models import F
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets , filters, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .serializers import HeritageSerializer , QuizSerializer , NotificationSerializer, QuizAnswerHistorySerializer
+from .models import Heritage , Quiz , Notification, QuizAnswerHistory
+
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +111,40 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset.order_by('?')[:count]
 
+class QuizAnswerHistoryViewSet(viewsets.ModelViewSet):
+    queryset = QuizAnswerHistory.objects.all()
+    serializer_class = QuizAnswerHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['post'], url_path='bulk-upsert')
+    def bulk_upsert(self, request):
+        # 認証チェック
+        if not request.user.is_authenticated:
+            return Response({"error": "Authentication required"}, status=401)
+
+        serializer = QuizAnswerHistorySerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        now = timezone.now()
+        
+        histories_to_upsert = []
+        for item in serializer.validated_data:
+            histories_to_upsert.append(
+                QuizAnswerHistory(
+                    user=request.user,
+                    quiz=item['quiz'],
+                    is_latest_correct=item['is_latest_correct'],
+                    last_attempted_at=now
+                )
+            )
+        QuizAnswerHistory.objects.bulk_create(
+            histories_to_upsert,
+            update_conflicts=True, # upsert有効
+            unique_fields=['user', 'quiz'],
+            update_fields=['is_latest_correct', 'last_attempted_at']
+        )
+
+        return Response({"status": "success"}, status=201)
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer
     pagination_class = None

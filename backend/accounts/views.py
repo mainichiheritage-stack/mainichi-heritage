@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -101,27 +102,43 @@ class PasswordResetRequestView(APIView):
         if not email:
             return Response({"error": "メールアドレスは必須です"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # emailでユーザーを特定
         user = User.objects.filter(email=email).first()
         
+        # ユーザーが存在する場合のみメール送信処理を行う
         if user:
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = f"{settings.FRONTEND_URL}/password-reset-confirm/{uid}-{token}"
-            
             try:
+                # UIDの生成
+                uid = urlsafe_base64_encode(force_bytes(user.pk.hex))
+                token = default_token_generator.make_token(user)
+                
+                # フロントエンドのURLを構築
+                reset_url = f"{settings.FRONTEND_URL}/password-reset-confirm/{uid}-{token}"
+                
+                # メール送信
                 send_mail(
                     subject="【まいにち世界遺産】パスワード再設定のご案内",
-                    message=f"以下のリンクをクリックしてパスワードを再設定してください。\n\n{reset_url}\n\n※リンクの有効期限は24時間です。",
+                    message=(
+                        f"以下のリンクをクリックしてパスワードを再設定してください。\n\n"
+                        f"{reset_url}\n\n"
+                        f"※リンクの有効期限は24時間です。\n"
+                        f"※このメールに心当たりがない場合は、破棄してください。"
+                    ),
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[email],
                     fail_silently=False,
                 )
-                logger.info(f"パスワードリセットメール送信：email={email}")
-            except Exception as e:
-                logger.error(f"メール送信失敗：email={email}, error={str(e)}")
-                return Response({"error": "メール送信に失敗しました"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                logger.info(f"パスワードリセットメール送信成功：email={email}")
 
-        return Response({"detail": "リセットメールを送信しました"}, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"パスワードリセット処理中のエラー：email={email}, error={str(e)}", exc_info=True)
+                return Response({"error": "メール送信中に予期せぬエラーが発生しました"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # ユーザーが見つからなくてもセキュリティ的に常に200 OKを返す
+        return Response(
+            {"detail": "ご入力いただいたメールアドレスに、リセット手順を記載したメールを送信しました。"}, 
+            status=status.HTTP_200_OK
+        )
 
 class PasswordResetConfirmView(APIView):
     """
@@ -134,37 +151,40 @@ class PasswordResetConfirmView(APIView):
         new_password = request.data.get('password')
 
         if not token_data or not new_password:
-            return Response({"error": "不正なリクエストです"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "必要な情報が不足しています"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Djangoのトークンは「タイムスタンプ-ハッシュ」の形式で必ずハイフンを1つ含むため、
-            # 右から2回分割して「UID部分」「タイムスタンプ」「ハッシュ」の3つに分ける
-            parts = token_data.rsplit('-', 2)
+            # トークンの分割
+            if '-' not in token_data:
+                return Response({"error": "トークン形式が無効です"}, status=status.HTTP_400_BAD_REQUEST)
             
-            if len(parts) != 3:
-                raise ValueError("トークン形式が不正です")
+            uidb64, token = token_data.split('-', 1)
 
-            uidb64 = parts[0]
-            # 分割したタイムスタンプとハッシュをハイフンで繋ぎ直して、正しいトークンを復元する
-            token = f"{parts[1]}-{parts[2]}" 
+            # UIDのデコードとUUID化
+            try:
+                decoded_uid = force_str(urlsafe_base64_decode(uidb64))
+                user_id = uuid.UUID(decoded_uid) # 文字列をUUIDオブジェクトに厳密変換
+            except (ValueError, TypeError, UnicodeDecodeError) as e:
+                logger.error(f"UIDデコード失敗: {uidb64} - Error: {str(e)}")
+                return Response({"error": "無効なURL形式です"}, status=status.HTTP_400_BAD_REQUEST)
 
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
+            # ユーザーの取得
+            user = User.objects.filter(pk=user_id).first()
+            if user is None:
+                return Response({"error": "ユーザーが見つかりません"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # トークンの妥当性チェック
             if default_token_generator.check_token(user, token):
                 user.set_password(new_password)
                 user.save()
-                
-                logger.info(f"パスワード再設定成功：email={user.email}")
-                return Response({"detail": "パスワードを更新しました"}, status=status.HTTP_200_OK)
-            
-            logger.warning(f"パスワード再設定失敗（無効なトークン）：email={user.email}")
-            return Response({"error": "有効期限切れ、または無効なURLです"}, status=status.HTTP_400_BAD_REQUEST)
+                logger.info(f"パスワード再設定成功: {user.email}")
+                return Response({"detail": "パスワードを正常に更新しました"}, status=status.HTTP_200_OK)
+            else:
+                logger.warning(f"トークン無効または期限切れ: {user.email}")
+                return Response({"error": "このリンクは有効期限切れか、既に使用されています"}, status=status.HTTP_400_BAD_REQUEST)
 
-        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
-            return Response({"error": "無効なリクエストです"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"パスワード再設定中に例外発生：{str(e)}")
+            logger.error(f"パスワード再設定中に予期せぬエラー: {str(e)}", exc_info=True)
             return Response({"error": "サーバーエラーが発生しました"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UserSerializer(serializers.ModelSerializer):

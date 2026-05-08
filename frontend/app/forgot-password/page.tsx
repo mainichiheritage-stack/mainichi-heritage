@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Loading from "@/components/common/Loading";
 import { log } from "@/utils/logger";
+import { authenticatedFetch } from "@/utils/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/password-reset/`,
         {
           method: "POST",
