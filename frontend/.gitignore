@@ -16,4 +16,7 @@
 yarn-error.log*
 .pnpm-debug.log*
 
+# Cloudflare generated worker output
+worker.js
+
 next-env.d.ts

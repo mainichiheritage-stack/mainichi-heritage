@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "gfycov7pwc6weila.public.blob.vercel-storage.com",
       },
+      // If image storage is migrated to Cloudflare R2 or Cloudflare Images,
+      // add the new host here.
     ],
   },
 
