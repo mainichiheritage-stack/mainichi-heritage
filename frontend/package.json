@@ -8,7 +8,7 @@
     "build": "next build",
     "build:cloudflare": "open-next build",
     "build:cloudflare:watch": "open-next build --watch",
-    "deploy:cloudflare": "wrangler deploy",
+    "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
     "start": "next start",
     "lint": "eslint"
   },

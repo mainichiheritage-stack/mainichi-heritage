@@ -37,6 +37,8 @@ If you prefer manual deployment:
 3. Configure `wrangler.toml` with your account details
 4. Deploy: `npm run deploy:cloudflare`
 
+> Note: For Cloudflare Pages, do not put the Pages build command into `wrangler.toml`. Set `npm run build:cloudflare` and `.open-next` in the Pages project settings instead.
+
 ## Environment variables for Cloudflare
 
 Add these in Cloudflare Pages / Workers settings or `.env.local` for local development:
