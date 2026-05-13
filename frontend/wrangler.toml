@@ -1,11 +1,13 @@
 name = "mainichi-heritage-frontend"
 compatibility_date = "2026-05-01"
-workers_dev = true
 main = ".open-next/server-functions/default/index.mjs"
 compatibility_flags = ["nodejs_compat"]
-type = "module"
 
-# Module aliases for Next.js internal and optional dependencies
+# 静的資産の設定
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
 [alias]
 "react-server-dom-webpack/client" = "./wrangler-noop.mjs"
 "react-server-dom-webpack/server" = "./wrangler-noop.mjs"
@@ -18,6 +20,3 @@ type = "module"
 "./middleware.mjs" = "./wrangler-noop.mjs"
 "critters" = "./wrangler-noop.mjs"
 "@opentelemetry/api" = "./wrangler-noop.mjs"
-
-[assets]
-directory = ".open-next/assets"
