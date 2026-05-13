@@ -49,31 +49,25 @@ NEXT_PUBLIC_AXIOM_DATASET=your-dataset
 
 ## Deploy on Cloudflare
 
-This project can be deployed to Cloudflare Pages / Cloudflare Workers using OpenNext.
+This project can be deployed to Cloudflare Workers using OpenNext.
 
-> Note: This repository uses Next.js `15.5.2` and OpenNext for Cloudflare deployment.
+> Note: This repository uses Next.js `15.5.2` and OpenNext for Cloudflare Workers deployment.
 
-### Option 1: Cloudflare Pages (Recommended)
+### Option 1: Cloudflare Workers (Recommended)
 
-1. Create a new Cloudflare Pages project
-2. Connect your GitHub repository
-3. Set build settings:
-   - **Build command**: `npm run build:cloudflare`
-   - **Build output directory**: `.open-next`
-4. Configure environment variables in Pages settings
-5. Deploy!
+1. Create a new Cloudflare Workers project or use an existing Worker in the Cloudflare dashboard
+2. Configure `frontend/wrangler.toml` with your account and route settings
+3. Build for Cloudflare:
+   - `npm run build:cloudflare`
+4. Deploy:
+   - `npm run deploy:cloudflare`
 
 ### Option 2: Manual deployment with Wrangler
 
 1. Install Wrangler CLI globally: `npm install -g wrangler`
 2. Login: `wrangler auth login`
-3. Configure `wrangler.toml` with your account details
-4. Deploy: `npm run deploy:cloudflare`
-   ```
-
-   ```
-5. Configure `frontend/wrangler.toml` with your Cloudflare account values.
-6. Deploy with:
+3. Configure `frontend/wrangler.toml` with your Cloudflare account values.
+4. Deploy with:
    ```bash
    npm run deploy:cloudflare
    ```

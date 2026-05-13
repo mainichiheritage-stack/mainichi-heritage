@@ -1,3 +1,8 @@
 name = "mainichi-heritage-frontend"
 compatibility_date = "2026-05-01"
-pages_build_output_dir = ".open-next"
+workers_dev = true
+main = ".open-next/server-functions/default/index.mjs"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
