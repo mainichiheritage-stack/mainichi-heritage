@@ -34,24 +34,22 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. Open-Nextの出力をコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
-          # 2. 上記で作った Mock ファイルを dist に配置
           cp otel-mock.mjs dist/otel-mock.mjs
+          cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 3. 本番用ラッパー index.js
           cat <<EOF > dist/index.js
+          // 1. グローバルを即座に防御 (import より先に実行)
           import * as otel from './otel-mock.mjs';
+          const mock = otel.default;
 
-          // グローバル空間の汚染を防ぐため、defineProperties を使用
           Object.defineProperties(globalThis, {
-            api: { value: otel.api, enumerable: true },
-            opentelemetry: { value: otel.opentelemetry, enumerable: true },
+            api: { value: mock, configurable: true, enumerable: true },
+            opentelemetry: { value: mock, configurable: true, enumerable: true },
             __dirname: { value: "/" },
             __filename: { value: "/index.js" }
           });
 
-          // Next.jsのテレメトリを環境変数で完全に殺す
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
 
@@ -59,11 +57,20 @@ jobs:
 
           export default {
             async fetch(request, env, ctx) {
-              if (!memoizedWorker) {
-                const worker = await import("./_worker.mjs");
-                memoizedWorker = worker.default || worker;
+              try {
+                if (!memoizedWorker) {
+                  // ここでの失敗が 1101 の主因
+                  const worker = await import("./_worker.mjs");
+                  memoizedWorker = worker.default || worker;
+                }
+                return await memoizedWorker.fetch(request, env, ctx);
+              } catch (e) {
+                // クラッシュ内容をブラウザに強制表示させる
+                return new Response(
+                  "CRITICAL_INIT_ERROR: " + e.message + "\n" + e.stack, 
+                  { status: 500, headers: { "Content-Type": "text/plain" } }
+                );
               }
-              return await memoizedWorker.fetch(request, env, ctx);
             }
           };
           EOF
