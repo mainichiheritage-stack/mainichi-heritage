@@ -54,9 +54,10 @@ jobs:
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
         run: |
-          echo "export default {}" > node_modules/next/dist/compiled/babel/bundle.js
-          echo "export default {}" > node_modules/next/dist/compiled/babel-packages/packages-bundle.js
-          echo "export default {}" > node_modules/next/dist/compiled/source-map/source-map.js
+          echo "export const codeFrameColumns = () => ''; export default { codeFrameColumns };" > node_modules/next/dist/compiled/babel/code-frame.js
+          echo "export default function() { return { transform: () => ({ code: '' }) }; }" > node_modules/next/dist/compiled/babel/bundle.js
+          echo "export default function() { return {}; }" > node_modules/next/dist/compiled/babel-packages/packages-bundle.js
+          echo "export const SourceMapConsumer = function(){}; export default { SourceMapConsumer };" > node_modules/next/dist/compiled/source-map/source-map.js
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3

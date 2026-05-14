@@ -16,6 +16,7 @@ enabled = true
 
 [alias]
 "next/dist/compiled/babel/bundle.js" = "./wrangler-noop.mjs"
+"next/dist/compiled/babel/code-frame.js" = "./wrangler-noop.mjs"
 "next/dist/compiled/babel-packages/packages-bundle.js" = "./wrangler-noop.mjs"
 "next/dist/compiled/source-map/source-map.js" = "./wrangler-noop.mjs"
 "react-server-dom-webpack/client" = "./wrangler-noop.mjs"

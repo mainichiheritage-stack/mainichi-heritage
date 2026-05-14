@@ -1,3 +1,9 @@
-// Empty module to satisfy optional Next.js internal dependencies
-export default {};
-export const prerender = () => {};
+// frontend/wrangler-noop.mjs
+export const codeFrameColumns = () => "";
+export const SourceMapConsumer = function () {};
+export default function () {
+  return {
+    transform: () => ({ code: "" }),
+    consume: () => ({}),
+  };
+}
