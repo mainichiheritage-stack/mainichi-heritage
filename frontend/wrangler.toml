@@ -3,7 +3,9 @@ main = "dist/index.mjs"
 compatibility_date = "2024-09-23"
 compatibility_flags = [ "nodejs_compat" ]
 
-find_additional_modules = false
+[build.upload]
+format = "modules"
+main = "index.mjs"
 
 [assets]
 directory = ".open-next/assets"
