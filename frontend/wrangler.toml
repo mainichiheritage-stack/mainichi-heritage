@@ -1,5 +1,4 @@
 name = "mainichi-heritage-frontend"
-main = ".open-next/server-functions/default/index.mjs"
 compatibility_date = "2024-09-23"
 compatibility_flags = [ "nodejs_compat" ]
 
@@ -9,16 +8,3 @@ binding = "ASSETS"
 
 [observability]
 enabled = true
-
-[alias]
-"react-server-dom-webpack/client" = "./wrangler-noop.mjs"
-"react-server-dom-webpack/server" = "./wrangler-noop.mjs"
-"react-server-dom-webpack/server.node" = "./wrangler-noop.mjs"
-"react-server-dom-webpack/static" = "./wrangler-noop.mjs"
-"react-server-dom-turbopack/client" = "./wrangler-noop.mjs"
-"react-server-dom-turbopack/server" = "./wrangler-noop.mjs"
-"react-server-dom-turbopack/static" = "./wrangler-noop.mjs"
-"react-dom/static" = "./wrangler-noop.mjs"
-"./middleware.mjs" = "./wrangler-noop.mjs"
-"critters" = "./wrangler-noop.mjs"
-"@opentelemetry/api" = "./wrangler-noop.mjs"
