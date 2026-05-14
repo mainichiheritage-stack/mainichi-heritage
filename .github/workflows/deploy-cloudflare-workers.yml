@@ -36,8 +36,13 @@ jobs:
           mkdir -p dist
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
-          echo 'import * as worker from "./_worker.mjs";' > dist/index.js
-          echo 'export default worker.default || worker;' >> dist/index.js
+          cat <<EOF > dist/index.js
+          globalThis.__dirname = "";
+          globalThis.__filename = "";
+          import * as worker from "./_worker.mjs";
+          const entry = worker.default || worker;
+          export default entry;
+          EOF
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
