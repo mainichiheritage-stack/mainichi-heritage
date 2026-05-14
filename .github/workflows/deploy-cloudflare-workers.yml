@@ -34,90 +34,36 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. ビルド済みアセットの準備
+          # 1. Open-Nextの出力をコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
-          cp wrangler-noop.mjs dist/wrangler-noop.mjs
+          # 2. 上記で作った Mock ファイルを dist に配置
+          cp otel-mock.mjs dist/otel-mock.mjs
 
-          # 2. 本番用ラッパー index.js の生成
+          # 3. 本番用ラッパー index.js
           cat <<EOF > dist/index.js
-          /**
-           * Cloudflare Workers / Next.js Compatibility Wrapper
-           * 
-           * Node.js 固有の API (OpenTelemetry等) への依存を
-           * ランタイムレベルで安全にモック化します。
-           */
+          import * as otel from './otel-mock.mjs';
 
-          // 1. 最強のダミーオブジェクト (Proxy)
-          // 何を呼ばれても、関数として実行されても、常に自分自身を返す
-          const createSafeMock = () => {
-            const mock = (...args) => {
-              // createContextKey が呼ばれた場合のみ、期待される Symbol を返す
-              if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('contextKey')) {
-                return Symbol('ck');
-              }
-              return mock;
-            };
-            return new Proxy(mock, {
-              get: (target, prop) => {
-                if (prop === 'createContextKey') return () => Symbol('ck');
-                // resolve() が呼ばれた際の fallback
-                if (prop === 'resolve') return () => "";
-                return mock;
-              }
-            });
-          };
-
-          const safeMock = createSafeMock();
-
-          // 2. グローバル空間の徹底防衛
-          // Next.js 内部が 'api' や 'opentelemetry' を直接参照しても落ちないようにする
+          // グローバル空間の汚染を防ぐため、defineProperties を使用
           Object.defineProperties(globalThis, {
-            api: { value: safeMock, writable: true, configurable: true },
-            opentelemetry: { value: safeMock, writable: true, configurable: true },
-            __dirname: { value: "/", writable: true },
-            __filename: { value: "/index.js", writable: true }
+            api: { value: otel.api, enumerable: true },
+            opentelemetry: { value: otel.opentelemetry, enumerable: true },
+            __dirname: { value: "/" },
+            __filename: { value: "/index.js" }
           });
 
-          // 3. モジュール解決 (require) の補完
-          const dummyRequire = (id) => safeMock;
-          dummyRequire.resolve = () => "";
-          if (!globalThis.require) {
-            globalThis.require = dummyRequire;
-          }
-
-          // 4. 環境設定
+          // Next.jsのテレメトリを環境変数で完全に殺す
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
-          if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
 
           let memoizedWorker;
 
           export default {
             async fetch(request, env, ctx) {
-              // 実行直前に再度グローバルを保証
-              globalThis.api = safeMock;
-              
               if (!memoizedWorker) {
-                try {
-                  const worker = await import("./_worker.mjs");
-                  memoizedWorker = worker.default || worker;
-                } catch (e) {
-                  return new Response("Worker Initialization Failed:\n" + e.stack, { 
-                    status: 500,
-                    headers: { "content-type": "text/plain; charset=UTF-8" }
-                  });
-                }
+                const worker = await import("./_worker.mjs");
+                memoizedWorker = worker.default || worker;
               }
-              
-              try {
-                return await memoizedWorker.fetch(request, env, ctx);
-              } catch (e) {
-                console.error("Runtime Error:", e);
-                return new Response("Worker Runtime Error:\n" + e.stack, { 
-                  status: 500,
-                  headers: { "content-type": "text/plain; charset=UTF-8" }
-                });
-              }
+              return await memoizedWorker.fetch(request, env, ctx);
             }
           };
           EOF
