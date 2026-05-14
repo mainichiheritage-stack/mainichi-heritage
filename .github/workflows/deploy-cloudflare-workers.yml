@@ -34,14 +34,17 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. ビルド済みファイルをコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.mjs dist/otel-mock.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 2. 【物理パッチ：最終版】
-          # 「英数字.createContextKey」というパターンをすべて「(()=>Symbol.for('ck'))」に書き換えます。
-          # これにより、内部で変数が api2 や e などにリネームされていても確実に無害化されます。
+          # 【最終解決：物理パッチ】
+          # 1. api2.createContextKey や e.createContextKey などの呼び出しを、
+          #    変数名に関わらず Symbol を返す即時関数に置換します。
+          #    ※末尾の ( ) まで含めて置換するのがコツです。
+          sed -i 's/[a-zA-Z0-9_]*\.createContextKey()/(()=>Symbol.for("ck"))()/g' dist/_worker.mjs
+
+          # 2. 万が一、関数定義として参照されている場合もカバーします
           sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g' dist/_worker.mjs
 
           # 3. 本番用ラッパー index.js の生成
@@ -49,7 +52,6 @@ jobs:
           import * as otel from './otel-mock.mjs';
           const mock = otel.default;
 
-          // require.resolve エラーを防ぐためのダミー関数
           const dummyRequire = (id) => mock;
           dummyRequire.resolve = (id) => "";
 
@@ -61,7 +63,6 @@ jobs:
             __filename: { value: "/index.js" }
           });
 
-          // Next.js のテレメトリ設定を徹底的にオフにする
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
           process.env.NODE_ENV = "production";
@@ -72,7 +73,7 @@ jobs:
             async fetch(request, env, ctx) {
               try {
                 if (!memoizedWorker) {
-                  // 初期化時のエラーをキャッチできるようにする
+                  // _worker.mjs を読み込む前に、上記の global プロパティが確定している必要があります
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 }
