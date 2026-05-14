@@ -51,12 +51,17 @@ jobs:
           };
           EOF
 
+      - name: Physical Diet (The CI Hack)
+        working-directory: frontend
+        run: |
+          echo "export default {}" > node_modules/next/dist/compiled/babel/bundle.js
+          echo "export default {}" > node_modules/next/dist/compiled/babel-packages/packages-bundle.js
+          echo "export default {}" > node_modules/next/dist/compiled/source-map/source-map.js
+
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          # [重要] --no-bundle は付けません！
-          # wrangler.toml の [build] 設定を反映させるために Wrangler にビルドさせます
-          command: deploy dist/index.js
+          command: deploy
