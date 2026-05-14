@@ -34,40 +34,86 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
+          # 1. ビルド済みファイルをコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
+          # 2. 【重要】実行ファイルへの直接パッチ (外科手術)
+          # Cloudflare Workers で未定義の api.createContextKey と require.resolve を力技で無害化します。
+          # 'resolve(...)' という関数呼び出しを空文字に、'api.createContextKey' を Symbol 生成に置換します。
           sed -i 's/api.createContextKey/(() => Symbol("contextKey"))/g' dist/_worker.mjs
+          sed -i 's/resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
 
-          # ラッパー index.js の生成
+          # 3. 本番用ラッパー index.js の生成
           cat <<EOF > dist/index.js
+          /**
+           * Cloudflare Workers / Next.js Polyfill Wrapper
+           * Node.js 固有の API 参照による実行時エラーを防止するためのラッパーです。
+           */
+
+          // --- Polyfills & Mocks ---
           const noop = () => {};
           const dummyObj = new Proxy({}, { get: () => noop });
+
+          // Next.js が期待するテレメトリ/コンテキスト API のモック
           const mockApi = {
             createContextKey: () => Symbol("contextKey"),
             getTracer: () => dummyObj,
             getPropagator: () => dummyObj,
+            context: dummyObj,
+            trace: dummyObj,
+            propagation: dummyObj,
           };
+
+          // グローバル空間の汚染防止と互換性確保
           globalThis.api = mockApi;
-          globalThis.require = globalThis.require || (() => mockApi);
+          globalThis.opentelemetry = dummyObj;
+          globalThis.__dirname = "/";
+          globalThis.__filename = "/index.js";
+
+          // require.resolve の不足を補うためのダミー require
+          const dummyRequire = (id) => mockApi;
+          dummyRequire.resolve = () => ""; // resolve is not a function 対策
+          globalThis.require = globalThis.require || dummyRequire;
+
+          // --- Environment Configuration ---
+          process.env.NEXT_OTEL_FETCH_DISABLED = "1";
+          process.env.NEXT_TELEMETRY_DISABLED = "1";
+          process.env.NODE_ENV = "production";
 
           let memoizedWorker;
 
           export default {
             async fetch(request, env, ctx) {
+              // 実行コンテキストでもグローバルを保証
               globalThis.api = mockApi;
+              globalThis.require = globalThis.require || dummyRequire;
+
               if (!memoizedWorker) {
                 try {
+                  // パッチ済みの _worker.mjs をロード
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 } catch (e) {
-                  return new Response("Import Error: " + e.message + "\n" + e.stack, { status: 500 });
+                  return new Response("Worker Init Error: " + e.message + "\n" + e.stack, { 
+                    status: 500,
+                    headers: { "content-type": "text/plain; charset=UTF-8" }
+                  });
                 }
               }
+              
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                return new Response(e.stack, { status: 500 });
+                // 実行時エラーのトレースを出力
+                console.error("Runtime Error:", e);
+                return new Response(
+                  "Worker Runtime Error: " + e.message + "\n" + e.stack,
+                  { 
+                    status: 500, 
+                    headers: { "content-type": "text/plain; charset=UTF-8" } 
+                  }
+                );
               }
             }
           };
