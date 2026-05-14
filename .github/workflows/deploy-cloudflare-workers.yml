@@ -33,4 +33,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           npm run build:cloudflare
-          run: npx wrangler deploy .open-next/server-functions/default/index.mjs --name mainichi-heritage-frontend --compatibility-date 2024-04-03 --compatibility-flags nodejs_compat
+          npx wrangler deploy
