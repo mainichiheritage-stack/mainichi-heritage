@@ -34,44 +34,58 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. 元のファイルをコピー
+          # 1. ビルド済みアセットの準備
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 2. 【外科手術：最終版】参照先を「即時実行関数」に強制置換
-          # コード内のあらゆる箇所で api.createContextKey が呼ばれても、
-          # その場で新しい Symbol を生成して返すように書き換えます。
-          # これにより、グローバルの api オブジェクトが未定義でもエラーにならなくなります。
-          sed -i 's/api.createContextKey/(()=>Symbol("ck"))/g' dist/_worker.mjs
-          sed -i 's/require.resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
-
-          # 3. 本番用ラッパー index.js の生成
+          # 2. 本番用ラッパー index.js の生成
           cat <<EOF > dist/index.js
           /**
-           * Cloudflare Workers / Next.js Polyfill Wrapper
-           * Node.js 依存の Telemetry 機能を完全に無害化するリリース用ラッパー
+           * Cloudflare Workers / Next.js Compatibility Wrapper
+           * 
+           * Node.js 固有の API (OpenTelemetry等) への依存を
+           * ランタイムレベルで安全にモック化します。
            */
 
-          const noop = () => {};
-          const dummyObj = new Proxy({}, { get: () => noop });
-
-          // Next.js内部の fallback 用
-          const mockApi = {
-            createContextKey: () => Symbol("ck"),
-            getTracer: () => dummyObj,
-            getPropagator: () => dummyObj,
+          // 1. 最強のダミーオブジェクト (Proxy)
+          // 何を呼ばれても、関数として実行されても、常に自分自身を返す
+          const createSafeMock = () => {
+            const mock = (...args) => {
+              // createContextKey が呼ばれた場合のみ、期待される Symbol を返す
+              if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('contextKey')) {
+                return Symbol('ck');
+              }
+              return mock;
+            };
+            return new Proxy(mock, {
+              get: (target, prop) => {
+                if (prop === 'createContextKey') return () => Symbol('ck');
+                // resolve() が呼ばれた際の fallback
+                if (prop === 'resolve') return () => "";
+                return mock;
+              }
+            });
           };
 
-          globalThis.api = mockApi;
-          globalThis.opentelemetry = dummyObj;
-          globalThis.__dirname = "/";
-          globalThis.__filename = "/index.js";
+          const safeMock = createSafeMock();
 
-          const dummyRequire = (id) => mockApi;
-          dummyRequire.resolve = () => ""; 
-          globalThis.require = globalThis.require || dummyRequire;
+          // 2. グローバル空間の徹底防衛
+          // Next.js 内部が 'api' や 'opentelemetry' を直接参照しても落ちないようにする
+          Object.defineProperties(globalThis, {
+            api: { value: safeMock, writable: true, configurable: true },
+            opentelemetry: { value: safeMock, writable: true, configurable: true },
+            __dirname: { value: "/", writable: true },
+            __filename: { value: "/index.js", writable: true }
+          });
 
-          // テレメトリを完全に停止
+          // 3. モジュール解決 (require) の補完
+          const dummyRequire = (id) => safeMock;
+          dummyRequire.resolve = () => "";
+          if (!globalThis.require) {
+            globalThis.require = dummyRequire;
+          }
+
+          // 4. 環境設定
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
           if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
@@ -80,15 +94,15 @@ jobs:
 
           export default {
             async fetch(request, env, ctx) {
-              globalThis.api = mockApi;
-              globalThis.require = globalThis.require || dummyRequire;
-
+              // 実行直前に再度グローバルを保証
+              globalThis.api = safeMock;
+              
               if (!memoizedWorker) {
                 try {
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 } catch (e) {
-                  return new Response("Worker Init Error: " + e.message + "\n" + e.stack, { 
+                  return new Response("Worker Initialization Failed:\n" + e.stack, { 
                     status: 500,
                     headers: { "content-type": "text/plain; charset=UTF-8" }
                   });
@@ -99,13 +113,10 @@ jobs:
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
                 console.error("Runtime Error:", e);
-                return new Response(
-                  "Worker Runtime Error: " + e.message + "\n" + e.stack,
-                  { 
-                    status: 500, 
-                    headers: { "content-type": "text/plain; charset=UTF-8" } 
-                  }
-                );
+                return new Response("Worker Runtime Error:\n" + e.stack, { 
+                  status: 500,
+                  headers: { "content-type": "text/plain; charset=UTF-8" }
+                });
               }
             }
           };
