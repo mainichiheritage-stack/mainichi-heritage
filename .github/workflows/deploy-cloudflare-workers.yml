@@ -30,12 +30,13 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Isolate Entrypoint
+      - name: Force ESM Wrapper
         working-directory: frontend
         run: |
           mkdir -p dist
-          cp .open-next/server-functions/default/index.mjs dist/index.mjs
-          cp wrangler-noop.mjs dist/wrangler-noop.mjs
+          cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
+          echo 'import worker from "./_worker.mjs";' > dist/index.js
+          echo 'export default worker;' >> dist/index.js
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
@@ -43,4 +44,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          command: deploy dist/index.mjs --no-bundle --format modules
+          command: deploy dist/index.js
