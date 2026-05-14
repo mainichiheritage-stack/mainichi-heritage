@@ -36,41 +36,56 @@ jobs:
           mkdir -p dist
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
+
           cat <<EOF > dist/index.js
-          process.env.NEXT_OTEL_FETCH_DISABLED = "1";
-          process.env.NEXT_TELEMETRY_DISABLED = "1";
+          // 1. インポートより先にグローバルを「汚染」して防御する
           const noop = () => {};
           const dummyObj = new Proxy({}, { get: () => noop });
-          globalThis.api = globalThis.api || {
+
+          // Next.js内部が期待する構造を徹底的に作る
+          const mockApi = {
             createContextKey: () => Symbol("contextKey"),
             getTracer: () => dummyObj,
             getPropagator: () => dummyObj,
+            context: dummyObj,
+            trace: dummyObj,
+            propagation: dummyObj,
           };
-          globalThis.__dirname = "/";
-          globalThis.__filename = "/index.js";
+
+          // 複数の可能性（グローバル変数、またはモジュール）を両方塞ぐ
+          globalThis.api = mockApi;
+          globalThis.opentelemetry = dummyObj;
+
+          // requireシステムのモック
           const dummyRequire = (id) => {
-            return {
-              createContextKey: () => Symbol("contextKey"),
-              instance: dummyObj,
-              DefaultTracer: noop,
-              TraceFlags: { NONE: 0 },
-              Propagation: dummyObj,
-            };
+            console.log("Mock require called for:", id);
+            return mockApi;
           };
           dummyRequire.resolve = () => "";
           globalThis.require = globalThis.require || dummyRequire;
+
+          // 2. Next.jsの機能を制限
+          process.env.NEXT_OTEL_FETCH_DISABLED = "1";
+          process.env.NEXT_TELEMETRY_DISABLED = "1";
+          process.env.NODE_ENV = "production";
+
           let memoizedWorker;
+
           export default {
             async fetch(request, env, ctx) {
-              process.env.NEXT_OTEL_FETCH_DISABLED = "1";
+              // 実行環境（Context）でも再度保証する
+              globalThis.api = mockApi;
+              
               if (!memoizedWorker) {
                 try {
+                  // ここで _worker.mjs を読み込む。この時、上の globalThis.api が参照される
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 } catch (e) {
-                  return new Response("Import Error: " + e.message, { status: 500 });
+                  return new Response("Import Error: " + e.message + "\nStack: " + e.stack, { status: 500 });
                 }
               }
+              
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
