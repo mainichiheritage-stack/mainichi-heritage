@@ -34,51 +34,44 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
+          # 1. 元のファイルをコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 【外科手術】sed は安全な require.resolve 対策のみに限定
+          # 2. 【外科手術：最終版】参照先を「即時実行関数」に強制置換
+          # コード内のあらゆる箇所で api.createContextKey が呼ばれても、
+          # その場で新しい Symbol を生成して返すように書き換えます。
+          # これにより、グローバルの api オブジェクトが未定義でもエラーにならなくなります。
+          sed -i 's/api.createContextKey/(()=>Symbol("ck"))/g' dist/_worker.mjs
           sed -i 's/require.resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
 
           # 3. 本番用ラッパー index.js の生成
           cat <<EOF > dist/index.js
           /**
            * Cloudflare Workers / Next.js Polyfill Wrapper
-           * 全てのグローバル参照エラーを Proxy で強制的に無害化します
+           * Node.js 依存の Telemetry 機能を完全に無害化するリリース用ラッパー
            */
 
-          // --- 強力な Proxy ガード ---
-          // どんなプロパティを呼ばれても「自分自身」か「何もしない関数」を返す無限オブジェクト
-          const createRecursiveMock = () => {
-            const mock = (...args) => {
-              if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('contextKey')) {
-                return Symbol('contextKey');
-              }
-              return mock;
-            };
-            return new Proxy(mock, {
-              get: (target, prop) => {
-                if (prop === 'createContextKey') return () => Symbol('contextKey');
-                if (prop === Symbol.toPrimitive) return () => 'mock';
-                return mock;
-              }
-            });
+          const noop = () => {};
+          const dummyObj = new Proxy({}, { get: () => noop });
+
+          // Next.js内部の fallback 用
+          const mockApi = {
+            createContextKey: () => Symbol("ck"),
+            getTracer: () => dummyObj,
+            getPropagator: () => dummyObj,
           };
 
-          const universalMock = createRecursiveMock();
-
-          // Next.js が探しに行く可能性のある全てのパスを塞ぐ
-          globalThis.api = universalMock;
-          globalThis.opentelemetry = universalMock;
+          globalThis.api = mockApi;
+          globalThis.opentelemetry = dummyObj;
           globalThis.__dirname = "/";
           globalThis.__filename = "/index.js";
 
-          // require の戻り値も全て Proxy で保護
-          const dummyRequire = (id) => universalMock;
-          dummyRequire.resolve = () => "";
+          const dummyRequire = (id) => mockApi;
+          dummyRequire.resolve = () => ""; 
           globalThis.require = globalThis.require || dummyRequire;
 
-          // --- 環境設定 ---
+          // テレメトリを完全に停止
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
           if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
@@ -87,8 +80,7 @@ jobs:
 
           export default {
             async fetch(request, env, ctx) {
-              // 実行時にグローバルを再保証
-              globalThis.api = universalMock;
+              globalThis.api = mockApi;
               globalThis.require = globalThis.require || dummyRequire;
 
               if (!memoizedWorker) {
@@ -106,9 +98,13 @@ jobs:
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
+                console.error("Runtime Error:", e);
                 return new Response(
                   "Worker Runtime Error: " + e.message + "\n" + e.stack,
-                  { status: 500, headers: { "content-type": "text/plain; charset=UTF-8" } }
+                  { 
+                    status: 500, 
+                    headers: { "content-type": "text/plain; charset=UTF-8" } 
+                  }
                 );
               }
             }
