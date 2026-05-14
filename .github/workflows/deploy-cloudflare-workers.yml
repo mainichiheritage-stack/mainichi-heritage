@@ -38,24 +38,23 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 2. 【重要】実行ファイルへの直接パッチ (外科手術)
-          # Cloudflare Workers で未定義の api.createContextKey と require.resolve を力技で無害化します。
-          # 'resolve(...)' という関数呼び出しを空文字に、'api.createContextKey' を Symbol 生成に置換します。
+          # 2. 【外科手術】特定の不具合箇所のみをピンポイントで修正
+          # 構文エラーを避けるため、require.resolve の呼び出しパターンのみを置換します
+          sed -i 's/require.resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
+          # api.createContextKey のクラッシュを防止
           sed -i 's/api.createContextKey/(() => Symbol("contextKey"))/g' dist/_worker.mjs
-          sed -i 's/resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
 
           # 3. 本番用ラッパー index.js の生成
           cat <<EOF > dist/index.js
           /**
            * Cloudflare Workers / Next.js Polyfill Wrapper
-           * Node.js 固有の API 参照による実行時エラーを防止するためのラッパーです。
+           * Node.js 固有 API 欠如による実行時エラーを防止するリリース用ラッパー
            */
 
-          // --- Polyfills & Mocks ---
+          // --- 互換性レイヤー (Polyfills) ---
           const noop = () => {};
           const dummyObj = new Proxy({}, { get: () => noop });
 
-          // Next.js が期待するテレメトリ/コンテキスト API のモック
           const mockApi = {
             createContextKey: () => Symbol("contextKey"),
             getTracer: () => dummyObj,
@@ -65,33 +64,35 @@ jobs:
             propagation: dummyObj,
           };
 
-          // グローバル空間の汚染防止と互換性確保
+          // グローバル環境の整備
           globalThis.api = mockApi;
           globalThis.opentelemetry = dummyObj;
           globalThis.__dirname = "/";
           globalThis.__filename = "/index.js";
 
-          // require.resolve の不足を補うためのダミー require
+          // require.resolve 対策
           const dummyRequire = (id) => mockApi;
-          dummyRequire.resolve = () => ""; // resolve is not a function 対策
+          dummyRequire.resolve = () => ""; 
           globalThis.require = globalThis.require || dummyRequire;
 
-          // --- Environment Configuration ---
+          // --- 環境設定 ---
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
-          process.env.NODE_ENV = "production";
+          // 警告回避のため、未定義の場合のみ代入
+          if (!process.env.NODE_ENV) {
+            process.env.NODE_ENV = "production";
+          }
 
           let memoizedWorker;
 
           export default {
             async fetch(request, env, ctx) {
-              // 実行コンテキストでもグローバルを保証
+              // 実行時の整合性確保
               globalThis.api = mockApi;
               globalThis.require = globalThis.require || dummyRequire;
 
               if (!memoizedWorker) {
                 try {
-                  // パッチ済みの _worker.mjs をロード
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 } catch (e) {
@@ -105,7 +106,6 @@ jobs:
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                // 実行時エラーのトレースを出力
                 console.error("Runtime Error:", e);
                 return new Response(
                   "Worker Runtime Error: " + e.message + "\n" + e.stack,
