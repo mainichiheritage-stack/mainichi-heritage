@@ -39,14 +39,25 @@ jobs:
           cat <<EOF > dist/index.js
           globalThis.__dirname = "/";
           globalThis.__filename = "/index.js";
+          const dummyRequire = () => ({});
+          dummyRequire.resolve = () => "";
+          globalThis.require = globalThis.require || dummyRequire;
           let memoizedWorker;
           export default {
             async fetch(request, env, ctx) {
+              globalThis.__dirname = "/";
+              globalThis.__filename = "/index.js";
+              globalThis.require = globalThis.require || dummyRequire;
               if (!memoizedWorker) {
                 const worker = await import("./_worker.mjs");
                 memoizedWorker = worker.default || worker;
               }
-              return memoizedWorker.fetch(request, env, ctx);
+              try {
+                return await memoizedWorker.fetch(request, env, ctx);
+              } catch (e) {
+                console.error("Worker Execution Error:", e);
+                return new Response(e.message || "Internal Server Error", { status: 500 });
+              }
             }
           };
           EOF
