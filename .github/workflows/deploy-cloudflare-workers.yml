@@ -36,4 +36,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          command: deploy .open-next/server-functions/default/index.mjs --no-bundle
+          command: deploy --no-bundle
