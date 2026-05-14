@@ -34,61 +34,61 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. ビルド済みファイルをコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 2. 【外科手術】特定の不具合箇所のみをピンポイントで修正
-          # 構文エラーを避けるため、require.resolve の呼び出しパターンのみを置換します
+          # 【外科手術】sed は安全な require.resolve 対策のみに限定
           sed -i 's/require.resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
-          # api.createContextKey のクラッシュを防止
-          sed -i 's/api.createContextKey/(() => Symbol("contextKey"))/g' dist/_worker.mjs
 
           # 3. 本番用ラッパー index.js の生成
           cat <<EOF > dist/index.js
           /**
            * Cloudflare Workers / Next.js Polyfill Wrapper
-           * Node.js 固有 API 欠如による実行時エラーを防止するリリース用ラッパー
+           * 全てのグローバル参照エラーを Proxy で強制的に無害化します
            */
 
-          // --- 互換性レイヤー (Polyfills) ---
-          const noop = () => {};
-          const dummyObj = new Proxy({}, { get: () => noop });
-
-          const mockApi = {
-            createContextKey: () => Symbol("contextKey"),
-            getTracer: () => dummyObj,
-            getPropagator: () => dummyObj,
-            context: dummyObj,
-            trace: dummyObj,
-            propagation: dummyObj,
+          // --- 強力な Proxy ガード ---
+          // どんなプロパティを呼ばれても「自分自身」か「何もしない関数」を返す無限オブジェクト
+          const createRecursiveMock = () => {
+            const mock = (...args) => {
+              if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('contextKey')) {
+                return Symbol('contextKey');
+              }
+              return mock;
+            };
+            return new Proxy(mock, {
+              get: (target, prop) => {
+                if (prop === 'createContextKey') return () => Symbol('contextKey');
+                if (prop === Symbol.toPrimitive) return () => 'mock';
+                return mock;
+              }
+            });
           };
 
-          // グローバル環境の整備
-          globalThis.api = mockApi;
-          globalThis.opentelemetry = dummyObj;
+          const universalMock = createRecursiveMock();
+
+          // Next.js が探しに行く可能性のある全てのパスを塞ぐ
+          globalThis.api = universalMock;
+          globalThis.opentelemetry = universalMock;
           globalThis.__dirname = "/";
           globalThis.__filename = "/index.js";
 
-          // require.resolve 対策
-          const dummyRequire = (id) => mockApi;
-          dummyRequire.resolve = () => ""; 
+          // require の戻り値も全て Proxy で保護
+          const dummyRequire = (id) => universalMock;
+          dummyRequire.resolve = () => "";
           globalThis.require = globalThis.require || dummyRequire;
 
           // --- 環境設定 ---
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
-          // 警告回避のため、未定義の場合のみ代入
-          if (!process.env.NODE_ENV) {
-            process.env.NODE_ENV = "production";
-          }
+          if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
 
           let memoizedWorker;
 
           export default {
             async fetch(request, env, ctx) {
-              // 実行時の整合性確保
-              globalThis.api = mockApi;
+              // 実行時にグローバルを再保証
+              globalThis.api = universalMock;
               globalThis.require = globalThis.require || dummyRequire;
 
               if (!memoizedWorker) {
@@ -106,13 +106,9 @@ jobs:
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                console.error("Runtime Error:", e);
                 return new Response(
                   "Worker Runtime Error: " + e.message + "\n" + e.stack,
-                  { 
-                    status: 500, 
-                    headers: { "content-type": "text/plain; charset=UTF-8" } 
-                  }
+                  { status: 500, headers: { "content-type": "text/plain; charset=UTF-8" } }
                 );
               }
             }
