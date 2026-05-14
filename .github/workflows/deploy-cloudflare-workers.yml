@@ -30,6 +30,10 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
+      - name: Prepare Entrypoint
+        working-directory: frontend
+        run: cp .open-next/server-functions/default/index.mjs ./index.mjs
+
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
