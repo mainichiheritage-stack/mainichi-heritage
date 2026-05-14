@@ -1,6 +1,5 @@
 const createSafeMock = () => {
   const mock = (...args) => {
-    // api.createContextKey() が呼ばれた際に Symbol を返す
     if (
       args.length > 0 &&
       typeof args[0] === "string" &&
@@ -10,10 +9,13 @@ const createSafeMock = () => {
     }
     return mock;
   };
+
   return new Proxy(mock, {
     get: (target, prop) => {
       if (prop === "createContextKey") return () => Symbol.for("ck");
-      if (prop === "resolve" || prop === "toStringTag") return () => "";
+      // require.resolve() や path.resolve() 等への対応
+      if (prop === "resolve") return () => "";
+      if (prop === "toStringTag") return "Module";
       return mock;
     },
   });
@@ -21,13 +23,12 @@ const createSafeMock = () => {
 
 const safeMock = createSafeMock();
 
-// ESM 用エクスポート
+// ESM exports
 export const api = safeMock;
 export const opentelemetry = safeMock;
 export default safeMock;
 
-// CommonJS 用エクスポート (Next.js内部用)
+// CommonJS exports
 if (typeof module !== "undefined") {
   module.exports = safeMock;
-  module.exports.api = safeMock;
 }

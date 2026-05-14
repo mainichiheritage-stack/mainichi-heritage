@@ -39,19 +39,24 @@ jobs:
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
           cat <<EOF > dist/index.js
-          // 1. グローバルを即座に防御 (import より先に実行)
           import * as otel from './otel-mock.mjs';
           const mock = otel.default;
+
+          // require 関数を定義し、resolve メソッドを生やす
+          const dummyRequire = (id) => mock;
+          dummyRequire.resolve = (id) => "";
 
           Object.defineProperties(globalThis, {
             api: { value: mock, configurable: true, enumerable: true },
             opentelemetry: { value: mock, configurable: true, enumerable: true },
+            require: { value: dummyRequire, configurable: true, enumerable: true },
             __dirname: { value: "/" },
             __filename: { value: "/index.js" }
           });
 
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
+          process.env.NODE_ENV = "production";
 
           let memoizedWorker;
 
@@ -59,16 +64,14 @@ jobs:
             async fetch(request, env, ctx) {
               try {
                 if (!memoizedWorker) {
-                  // ここでの失敗が 1101 の主因
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 }
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                // クラッシュ内容をブラウザに強制表示させる
                 return new Response(
                   "CRITICAL_INIT_ERROR: " + e.message + "\n" + e.stack, 
-                  { status: 500, headers: { "Content-Type": "text/plain" } }
+                  { status: 500, headers: { "Content-Type": "text/plain; charset=UTF-8" } }
                 );
               }
             }
