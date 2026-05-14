@@ -37,62 +37,37 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
+          sed -i 's/api.createContextKey/(() => Symbol("contextKey"))/g' dist/_worker.mjs
+
+          # ラッパー index.js の生成
           cat <<EOF > dist/index.js
-          // 1. インポートより先にグローバルを「汚染」して防御する
           const noop = () => {};
           const dummyObj = new Proxy({}, { get: () => noop });
-
-          // Next.js内部が期待する構造を徹底的に作る
           const mockApi = {
             createContextKey: () => Symbol("contextKey"),
             getTracer: () => dummyObj,
             getPropagator: () => dummyObj,
-            context: dummyObj,
-            trace: dummyObj,
-            propagation: dummyObj,
           };
-
-          // 複数の可能性（グローバル変数、またはモジュール）を両方塞ぐ
           globalThis.api = mockApi;
-          globalThis.opentelemetry = dummyObj;
-
-          // requireシステムのモック
-          const dummyRequire = (id) => {
-            console.log("Mock require called for:", id);
-            return mockApi;
-          };
-          dummyRequire.resolve = () => "";
-          globalThis.require = globalThis.require || dummyRequire;
-
-          // 2. Next.jsの機能を制限
-          process.env.NEXT_OTEL_FETCH_DISABLED = "1";
-          process.env.NEXT_TELEMETRY_DISABLED = "1";
-          process.env.NODE_ENV = "production";
+          globalThis.require = globalThis.require || (() => mockApi);
 
           let memoizedWorker;
 
           export default {
             async fetch(request, env, ctx) {
-              // 実行環境（Context）でも再度保証する
               globalThis.api = mockApi;
-              
               if (!memoizedWorker) {
                 try {
-                  // ここで _worker.mjs を読み込む。この時、上の globalThis.api が参照される
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 } catch (e) {
-                  return new Response("Import Error: " + e.message + "\nStack: " + e.stack, { status: 500 });
+                  return new Response("Import Error: " + e.message + "\n" + e.stack, { status: 500 });
                 }
               }
-              
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                return new Response(
-                  "Worker Runtime Error: " + e.message + "\n" + e.stack,
-                  { status: 500, headers: { "content-type": "text/plain; charset=UTF-8" } }
-                );
+                return new Response(e.stack, { status: 500 });
               }
             }
           };
