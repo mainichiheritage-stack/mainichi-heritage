@@ -39,24 +39,36 @@ jobs:
           cat <<EOF > dist/index.js
           globalThis.__dirname = "/";
           globalThis.__filename = "/index.js";
-          const dummyRequire = () => ({});
+          const dummyRequire = () => ({
+            createContextKey: () => Symbol(),
+            getTracer: () => ({ startSpan: () => ({ end: () => {} }) }),
+          });
           dummyRequire.resolve = () => "";
           globalThis.require = globalThis.require || dummyRequire;
+          globalThis.api = globalThis.api || {
+            createContextKey: () => Symbol()
+          };
+
           let memoizedWorker;
+
           export default {
             async fetch(request, env, ctx) {
               globalThis.__dirname = "/";
-              globalThis.__filename = "/index.js";
               globalThis.require = globalThis.require || dummyRequire;
+              globalThis.api = globalThis.api || { createContextKey: () => Symbol() };
+
               if (!memoizedWorker) {
                 const worker = await import("./_worker.mjs");
                 memoizedWorker = worker.default || worker;
               }
+              
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                console.error("Worker Execution Error:", e);
-                return new Response(e.message || "Internal Server Error", { status: 500 });
+                return new Response(
+                  "Worker Error: " + e.message + "\nStack: " + e.stack, 
+                  { status: 500, headers: { "content-type": "text/plain; charset=UTF-8" } }
+                );
               }
             }
           };
