@@ -33,4 +33,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           npm run build:cloudflare
-          npx wrangler deploy .open-next/server-functions/default/index.mjs --no-bundle
+          npx wrangler deploy ./.open-next/server-functions/default/index.mjs --bundle=false

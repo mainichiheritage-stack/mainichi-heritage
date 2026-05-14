@@ -1,5 +1,5 @@
 name = "mainichi-heritage-frontend"
-main = ".open-next/server-functions/default/index.mjs"
+main = "./.open-next/server-functions/default/index.mjs"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
 
