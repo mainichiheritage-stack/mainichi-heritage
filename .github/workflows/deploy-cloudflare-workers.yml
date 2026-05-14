@@ -37,36 +37,45 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
           cat <<EOF > dist/index.js
+          process.env.NEXT_OTEL_FETCH_DISABLED = "1";
+          process.env.NEXT_TELEMETRY_DISABLED = "1";
+          const noop = () => {};
+          const dummyObj = new Proxy({}, { get: () => noop });
+          globalThis.api = globalThis.api || {
+            createContextKey: () => Symbol("contextKey"),
+            getTracer: () => dummyObj,
+            getPropagator: () => dummyObj,
+          };
           globalThis.__dirname = "/";
           globalThis.__filename = "/index.js";
-          const dummyRequire = () => ({
-            createContextKey: () => Symbol(),
-            getTracer: () => ({ startSpan: () => ({ end: () => {} }) }),
-          });
+          const dummyRequire = (id) => {
+            return {
+              createContextKey: () => Symbol("contextKey"),
+              instance: dummyObj,
+              DefaultTracer: noop,
+              TraceFlags: { NONE: 0 },
+              Propagation: dummyObj,
+            };
+          };
           dummyRequire.resolve = () => "";
           globalThis.require = globalThis.require || dummyRequire;
-          globalThis.api = globalThis.api || {
-            createContextKey: () => Symbol()
-          };
-
           let memoizedWorker;
-
           export default {
             async fetch(request, env, ctx) {
-              globalThis.__dirname = "/";
-              globalThis.require = globalThis.require || dummyRequire;
-              globalThis.api = globalThis.api || { createContextKey: () => Symbol() };
-
+              process.env.NEXT_OTEL_FETCH_DISABLED = "1";
               if (!memoizedWorker) {
-                const worker = await import("./_worker.mjs");
-                memoizedWorker = worker.default || worker;
+                try {
+                  const worker = await import("./_worker.mjs");
+                  memoizedWorker = worker.default || worker;
+                } catch (e) {
+                  return new Response("Import Error: " + e.message, { status: 500 });
+                }
               }
-              
               try {
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
                 return new Response(
-                  "Worker Error: " + e.message + "\nStack: " + e.stack, 
+                  "Worker Runtime Error: " + e.message + "\n" + e.stack,
                   { status: 500, headers: { "content-type": "text/plain; charset=UTF-8" } }
                 );
               }
