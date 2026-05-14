@@ -37,11 +37,18 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
           cat <<EOF > dist/index.js
-          globalThis.__dirname = "";
-          globalThis.__filename = "";
-          import * as worker from "./_worker.mjs";
-          const entry = worker.default || worker;
-          export default entry;
+          globalThis.__dirname = "/";
+          globalThis.__filename = "/index.js";
+          let memoizedWorker;
+          export default {
+            async fetch(request, env, ctx) {
+              if (!memoizedWorker) {
+                const worker = await import("./_worker.mjs");
+                memoizedWorker = worker.default || worker;
+              }
+              return memoizedWorker.fetch(request, env, ctx);
+            }
+          };
           EOF
 
       - name: Deploy to Cloudflare
@@ -50,4 +57,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
+          # [重要] --no-bundle は付けません！
+          # wrangler.toml の [build] 設定を反映させるために Wrangler にビルドさせます
           command: deploy dist/index.js
