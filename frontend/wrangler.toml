@@ -3,6 +3,11 @@ main = ".open-next/server-functions/default/index.mjs"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
 
+upload_source_maps = true
+
+[build.upload]
+format = "modules"
+
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
