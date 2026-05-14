@@ -38,11 +38,19 @@ jobs:
           cp otel-mock.mjs dist/otel-mock.mjs
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
+          # 【最終兵器：正規表現パッチ】
+          # api.createContextKey, api2.createContextKey, e.createContextKey など
+          # 文字列 + ".createContextKey" というパターンをすべて Symbol を返す関数に置換します。
+          # これにより、ビルド時にリネームされた内部変数もすべて無害化されます。
+          sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g' dist/_worker.mjs
+
+          # require.resolve も同様にパターン置換
+          sed -i 's/[a-zA-Z0-9_]*\.resolve(/((()=>"")||"").resolve(/g' dist/_worker.mjs
+
           cat <<EOF > dist/index.js
           import * as otel from './otel-mock.mjs';
           const mock = otel.default;
 
-          // require 関数を定義し、resolve メソッドを生やす
           const dummyRequire = (id) => mock;
           dummyRequire.resolve = (id) => "";
 
