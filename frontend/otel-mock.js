@@ -10,9 +10,9 @@ const safe = new Proxy(mock, {
   construct: () => safe,
 });
 
-// --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
+// --- 名前付きエクスポート (バリデーションを完全に沈黙させるリスト) ---
 
-// node:module / createRequire 対策
+// node:module
 export const createRequire = () => () => ({});
 
 // node:process
@@ -22,6 +22,25 @@ export const nextTick = globalThis.queueMicrotask || safe;
 export const cwd = () => "/";
 export const platform = "linux";
 export const arch = "x64";
+export const argv = [];
+export const pid = 1;
+
+// node:os (今回のエラー 'release' を含む)
+export const release = () => "1.0.0";
+export const hostname = () => "localhost";
+export const homedir = () => "/";
+export const tmpdir = () => "/tmp";
+export const type = () => "Linux";
+export const uptime = () => 0;
+export const cpus = () => [];
+export const networkInterfaces = () => ({});
+
+// node:util
+export const promisify = (f) => f;
+export const inherits = safe;
+export const format = safe;
+export const inspect = safe;
+export const types = safe;
 
 // node:async_hooks
 export const AsyncLocalStorage =
@@ -44,12 +63,16 @@ export const statSync = () => ({ size: 0, mtime: new Date() });
 export const lstatSync = () => ({ size: 0, mtime: new Date() });
 export const readFileSync = () => "";
 export const existsSync = () => true;
+export const readdirSync = () => [];
 
 // node:path
 export const sep = "/";
 export const delimiter = ":";
 export const join = safe;
 export const resolve = safe;
+export const relative = safe;
+export const dirname = safe;
+export const basename = safe;
 
 // node:crypto
 export const getRandomValues = (v) =>
@@ -57,9 +80,12 @@ export const getRandomValues = (v) =>
 export const sign = safe;
 export const verify = safe;
 export const createPrivateKey = safe;
+export const createPublicKey = safe;
 export const webcrypto = globalThis.crypto || safe;
+export const createHash = safe;
+export const createHmac = safe;
 
-// その他、ライブラリがインポートしがちなもの
+// その他
 export const exec = safe;
 export const spawn = safe;
 export const Buffer = globalThis.Buffer || safe;
