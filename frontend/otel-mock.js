@@ -12,12 +12,21 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:http / node:https (今回のエラー 'request' を解決)
+// node:process (今回のエラー 'env' を解決)
+export const env = globalThis.process?.env || {};
+export const nextTick = globalThis.queueMicrotask || safe;
+export const cwd = () => "/";
+export const stderr = safe;
+export const stdout = safe;
+export const stdin = safe;
+export const argv = [];
+export const pid = 1;
+
+// node:http / node:https
 export const request = safe;
 export const get = safe;
 export const Agent = safe;
 export const createServer = safe;
-export const normalize = safe;
 
 // node:buffer
 export const Buffer = globalThis.Buffer || safe;
@@ -38,6 +47,7 @@ export const readFile = safe;
 export const mkdir = safe;
 export const stat = safe;
 export const readdir = safe;
+export const lstat = safe;
 
 // node:os
 export const release = () => "1.0.0";
@@ -50,7 +60,7 @@ export const type = () => "Linux";
 export const uptime = () => 0;
 export const cpus = () => [];
 
-// node:util / node:url / node:path
+// node:util / node:url / node:path / node:querystring
 export const promisify = (f) => f;
 export const inherits = safe;
 export const format = safe;
@@ -58,6 +68,9 @@ export const inspect = safe;
 export const URL = globalThis.URL;
 export const join = safe;
 export const resolve = safe;
+export const normalize = safe;
+export const parse = safe;
+export const stringify = safe;
 
 // node:crypto
 export const createHash = safe;
@@ -65,6 +78,12 @@ export const createHmac = safe;
 export const randomBytes = safe;
 export const timingSafeEqual = safe;
 export const getCipherInfo = safe;
+
+// node:zlib / node:net / node:tls
+export const createGzip = safe;
+export const createGunzip = safe;
+export const connect = safe;
+export const createConnection = safe;
 
 // OpenTelemetry & Others
 export const api = safe;
