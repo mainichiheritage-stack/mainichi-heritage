@@ -20,7 +20,7 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (バリデーションを通過させるための全リスト) ---
 
-// node:url / node:querystring (今回のエラー 'parse' を解決)
+// node:url / node:querystring
 export const parse = safe;
 export const stringify = safe;
 export const format = safe;
@@ -117,6 +117,11 @@ export const createGunzip = safe;
 export const Readable = safe;
 export const Writable = safe;
 export const Transform = safe;
+export const Duplex = safe; // ← 今回のエラー原因！復活させました
+export const PassThrough = safe; // 先回り追加
+export const Stream = safe; // 先回り追加
+export const pipeline = safe; // 先回り追加
+export const finished = safe; // 先回り追加
 export const EventEmitter = function () {
   return safe;
 };
