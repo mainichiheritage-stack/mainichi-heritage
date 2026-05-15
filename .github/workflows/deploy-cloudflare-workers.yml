@@ -85,9 +85,11 @@ jobs:
           echo "export const SourceMapConsumer = function(){}; export default { SourceMapConsumer };" > node_modules/next/dist/compiled/source-map/source-map.js
 
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: frontend/dist
-          command: deploy --no-bundle --config ../wrangler.toml
+        working-directory: frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd dist
+          ls -la
+          npx wrangler deploy --no-bundle --config ../wrangler.toml
