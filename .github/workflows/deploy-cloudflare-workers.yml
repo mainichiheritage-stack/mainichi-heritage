@@ -76,10 +76,10 @@ jobs:
           };
           EOF
 
-          # 【重要】_worker.mjs 内の node:fs 依存を物理的に書き換えて排除する
-          # これによりランタイムが起動時に node:fs を探しに行ってエラーになるのを防ぎます
-          sed -i 's/import.*from "node:fs"/import mock from ".\/otel-mock.js"/g' dist/_worker.mjs
-          sed -i 's/import.*from "fs"/import mock from ".\/otel-mock.js"/g' dist/_worker.mjs
+          sed -i 's/"node:fs"/"\.\/otel-mock.js"/g' dist/_worker.mjs
+          sed -i "s/'node:fs'/'\.\/otel-mock.js'/g" dist/_worker.mjs
+          sed -i 's/"fs"/"\.\/otel-mock.js"/g' dist/_worker.mjs
+          sed -i "s/'fs'/'\.\/otel-mock.js'/g" dist/_worker.mjs
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
