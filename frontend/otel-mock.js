@@ -12,7 +12,18 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:fs (今回のエラー 'ReadStream' を解決)
+// node:crypto / Web Crypto (今回のエラー 'getRandomValues' を解決)
+export const getRandomValues = (v) =>
+  globalThis.crypto?.getRandomValues(v) || v;
+export const randomFillSync = safe;
+export const createHash = safe;
+export const createHmac = safe;
+export const randomBytes = safe;
+export const timingSafeEqual = safe;
+export const getCipherInfo = safe;
+export const webcrypto = globalThis.crypto || safe;
+
+// node:fs
 export const ReadStream = safe;
 export const WriteStream = safe;
 export const promises = safe;
@@ -75,13 +86,6 @@ export const resolve = safe;
 export const normalize = safe;
 export const parse = safe;
 export const stringify = safe;
-
-// node:crypto
-export const createHash = safe;
-export const createHmac = safe;
-export const randomBytes = safe;
-export const timingSafeEqual = safe;
-export const getCipherInfo = safe;
 
 // node:zlib / node:net / node:tls
 export const createGzip = safe;
