@@ -12,7 +12,11 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:crypto (今回のエラー 'sign' を解決)
+// node:crypto (今回のエラー 'createPrivateKey' を解決)
+export const createPrivateKey = safe;
+export const createPublicKey = safe;
+export const createSecretKey = safe;
+export const keyObject = safe;
 export const sign = safe;
 export const verify = safe;
 export const createSign = safe;
