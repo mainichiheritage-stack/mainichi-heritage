@@ -38,49 +38,39 @@ jobs:
           cp otel-mock.js dist/otel-mock.js
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 1. ラッパー index.js の生成 (OTELをグローバルとモジュール両面で封殺)
+          # ラッパーの作成（import ではなく、より原始的な require に一時的に寄せます）
           cat <<EOF > dist/index.js
-          import * as otel from './otel-mock.js';
-          const mock = otel.default;
-
-          // グローバルに定義
+          const otel = require('./otel-mock.js');
           Object.defineProperties(globalThis, {
-            api: { value: mock, configurable: true, enumerable: true },
-            opentelemetry: { value: mock, configurable: true, enumerable: true },
-            require: { value: (id) => mock, configurable: true, enumerable: true }
+            api: { value: otel, enumerable: true },
+            opentelemetry: { value: otel, enumerable: true },
+            require: { value: (id) => otel, configurable: true }
           });
-          globalThis.require.resolve = () => "";
-
-          process.env.NEXT_OTEL_FETCH_DISABLED = "1";
-          process.env.NEXT_TELEMETRY_DISABLED = "1";
           process.env.NODE_ENV = "production";
-
-          let memoizedWorker;
           export default {
             async fetch(request, env, ctx) {
-              try {
-                if (!memoizedWorker) {
-                  const worker = await import("./_worker.mjs");
-                  memoizedWorker = worker.default || worker;
-                }
-                return await memoizedWorker.fetch(request, env, ctx);
-              } catch (e) {
-                return new Response("INIT_ERROR: " + e.message + "\n" + e.stack, { status: 500 });
-              }
+              const worker = await import("./_worker.mjs");
+              return await (worker.default || worker).fetch(request, env, ctx);
             }
           };
           EOF
 
-          # 2. 【最重要：物理パッチの強化】
-          # エラーの元である api2.createContextKey の呼び出しを、変数名に関わらず Symbol を返す即時関数に書き換えます
-          # さらに、api2[... ] 形式も網羅します
-          echo "Applying physical patches..."
-          find dist -type f \( -name "*.mjs" -o -name "*.js" \) -exec sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g' {} +
-          find dist -type f \( -name "*.mjs" -o -name "*.js" \) -exec sed -i 's/[a-zA-Z0-9_]*\["createContextKey"\]/(()=>Symbol.for("ck"))/g' {} +
+          # 【トドメの物理パッチ】
+          # dist ディレクトリ内の全ファイルを走査し、
+          # api2.createContextKey などの「変数名.メソッド」という形をすべて Symbol に書き換えます。
+          # () があってもなくても、ブラケット [ ] 形式でもすべて置換します。
+          echo "Executing final physical destruction..."
+          find dist -type f -name "*.js" -o -name "*.mjs" | xargs sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g'
+          find dist -type f -name "*.js" -o -name "*.mjs" | xargs sed -i 's/[a-zA-Z0-9_]*\["createContextKey"\]/(()=>Symbol.for("ck"))/g'
 
-          # 3. 置換が成功したかチェック（失敗していればここでログに出る）
-          echo "Verification: Checking for remaining createContextKey..."
-          grep -r "createContextKey" dist || echo "SUCCESS: No createContextKey found!"
+          # 検証ログ：もし createContextKey が残っていたらエラーを出す
+          if grep -r "createContextKey" dist; then
+            echo "Error: Patch failed to remove all createContextKey!"
+            # 強制的に全滅させるためのより強力な置換（最終手段）
+            find dist -type f -exec sed -i 's/\.createContextKey/?.createContextKey || (()=>Symbol.for("ck"))/g' {} +
+          else
+            echo "SUCCESS: All problematic calls destroyed."
+          fi
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
