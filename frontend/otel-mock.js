@@ -12,7 +12,13 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:buffer (今回のエラー 'Buffer' を解決)
+// node:http / node:https (今回のエラー 'request' を解決)
+export const request = safe;
+export const get = safe;
+export const Agent = safe;
+export const createServer = safe;
+
+// node:buffer
 export const Buffer = globalThis.Buffer || safe;
 
 // node:stream / node:events
