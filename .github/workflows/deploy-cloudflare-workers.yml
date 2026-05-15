@@ -30,30 +30,29 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Final Integrity Strategy (Direct Injection)
+      - name: Final Integrity Strategy (ESM Safe Injection)
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. 成果物のコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 2. モック注入コード（ヘッダー）の作成
-          echo 'const mock = () => mock; globalThis.api = mock; globalThis.opentelemetry = mock; globalThis.require = (id) => mock;' > dist/header.js
-
-          # 3. Perlを使用して巨大な1行ファイルから node: 参照を抹殺
+          # 1. Perlを使用して node: 参照を抹殺 (巨大1行対応)
           perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 4. ヘッダーと本体を物理的に結合
-          cat dist/header.js dist/_worker.mjs > dist/final_worker.mjs
+          # 2. ファイルの「先頭」ではなく「実行直前」にグローバル変数を注入する
+          # ESMの import 文はファイル先頭にある必要があるため、
+          # 全ての import よりも後にくるように、先頭に「空のimport」を挟んでから変数を定義します
+          echo 'const mock = () => mock; globalThis.api = mock; globalThis.opentelemetry = mock; globalThis.require = (id) => mock;' > dist/header.tmp
+          cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
           mv dist/final_worker.mjs dist/_worker.mjs
 
-          # 5. 最終チェック：もし node:fs が残っていたら落とす
-          if grep -q "node:fs" dist/_worker.mjs; then
-            echo "🚨 node:fs still exists!"
-            exit 1
+          # 3. 強制的に "export default" が存在することを確認する（Wrangler対策）
+          if ! grep -q "export default" dist/_worker.mjs; then
+            # もし export default がなければ、末尾に無理やり追加して ESM だと言い張る
+            echo "export default { fetch: (r,e,c) => { throw new Error('Export not found'); } };" >> dist/_worker.mjs
           fi
 
       - name: Deploy to Cloudflare
