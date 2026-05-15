@@ -76,6 +76,11 @@ jobs:
           };
           EOF
 
+          # 【重要】_worker.mjs 内の node:fs 依存を物理的に書き換えて排除する
+          # これによりランタイムが起動時に node:fs を探しに行ってエラーになるのを防ぎます
+          sed -i 's/import.*from "node:fs"/import mock from ".\/otel-mock.js"/g' dist/_worker.mjs
+          sed -i 's/import.*from "fs"/import mock from ".\/otel-mock.js"/g' dist/_worker.mjs
+
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
         run: |
@@ -90,15 +95,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # 1. wrangler.toml を dist の中にコピー（パス解決を確実にするため）
+          # 1. wrangler.toml を dist の中にコピー
           cp wrangler.toml dist/wrangler.toml
 
           # 2. dist ディレクトリに移動
           cd dist
 
-          # 3. ファイルが存在することをログに残す
+          # 3. 状態確認
           ls -la
 
-          # 4. 同じディレクトリにある wrangler.toml を使ってデプロイ
-          # --no-bundle なので、今いる場所がそのままアップロードされる
+          # 4. デプロイ実行
           npx wrangler deploy --no-bundle --config wrangler.toml
