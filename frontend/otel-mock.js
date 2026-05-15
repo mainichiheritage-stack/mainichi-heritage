@@ -25,8 +25,10 @@ export const readFileSync = () => "";
 export const existsSync = () => true;
 export const writeFile = safe;
 export const readFile = safe;
+export const mkdir = safe;
+export const stat = safe;
 
-// node:os (今回のエラー 'release' を含む)
+// node:os
 export const release = () => "1.0.0";
 export const platform = () => "linux";
 export const arch = () => "x64";
@@ -37,14 +39,19 @@ export const type = () => "Linux";
 export const uptime = () => 0;
 export const cpus = () => [];
 
-// node:util / node:url / node:crypto
+// node:util / node:url
 export const promisify = (f) => f;
 export const inherits = safe;
 export const format = safe;
 export const inspect = safe;
 export const URL = globalThis.URL;
-export const randomBytes = safe;
+
+// node:crypto (createHmac を追加)
 export const createHash = safe;
+export const createHmac = safe;
+export const randomBytes = safe;
+export const timingSafeEqual = safe;
+export const getCipherInfo = safe;
 
 // OpenTelemetry & Others
 export const api = safe;
