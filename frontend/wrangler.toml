@@ -3,19 +3,18 @@ main = "dist/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = [ "nodejs_compat" ]
 
-minify = false
-
-[build]
-command = ""
-
-[assets]
-directory = ".open-next/assets"
-binding = "ASSETS"
-
 [vars]
 NEXT_TELEMETRY_DISABLED = "1"
-NEXT_OTEL_FETCH_DISABLED = "1"
 NODE_ENV = "production"
 
 [alias]
 "@opentelemetry/api" = "./otel-mock.js"
+"react-server-dom-webpack/client" = "./otel-mock.js"
+"react-server-dom-webpack/server.node" = "./otel-mock.js"
+"react-server-dom-webpack/server" = "./otel-mock.js"
+"react-server-dom-webpack/static" = "./otel-mock.js"
+"react-server-dom-turbopack/server" = "./otel-mock.js"
+"react-server-dom-turbopack/static" = "./otel-mock.js"
+"react-server-dom-turbopack/client" = "./otel-mock.js"
+"critters" = "./otel-mock.js"
+"./middleware.mjs" = "./wrangler-noop.mjs"
