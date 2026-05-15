@@ -12,7 +12,24 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:path (今回のエラー 'sep' を解決)
+// node:crypto (今回のエラー 'sign' を解決)
+export const sign = safe;
+export const verify = safe;
+export const createSign = safe;
+export const createVerify = safe;
+export const getRandomValues = (v) =>
+  globalThis.crypto?.getRandomValues(v) || v;
+export const randomFillSync = safe;
+export const createHash = safe;
+export const createHmac = safe;
+export const randomBytes = safe;
+export const timingSafeEqual = safe;
+export const getCipherInfo = safe;
+export const webcrypto = globalThis.crypto || safe;
+export const pbkdf2 = safe;
+export const pbkdf2Sync = safe;
+
+// node:path
 export const sep = "/";
 export const delimiter = ":";
 export const join = safe;
@@ -57,17 +74,6 @@ export const createWriteStream = safe;
 export const openSync = safe;
 export const closeSync = safe;
 export const readSync = safe;
-
-// node:crypto
-export const getRandomValues = (v) =>
-  globalThis.crypto?.getRandomValues(v) || v;
-export const randomFillSync = safe;
-export const createHash = safe;
-export const createHmac = safe;
-export const randomBytes = safe;
-export const timingSafeEqual = safe;
-export const getCipherInfo = safe;
-export const webcrypto = globalThis.crypto || safe;
 
 // node:http / node:https
 export const request = safe;
