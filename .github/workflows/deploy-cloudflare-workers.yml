@@ -97,5 +97,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          # 物理パッチを破壊しないよう minify を無効化してデプロイ
-          command: deploy --no-minify
+          command: deploy
