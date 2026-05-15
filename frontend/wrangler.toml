@@ -1,7 +1,7 @@
 name = "mainichi-heritage-frontend"
 main = "index.js"
 compatibility_date = "2024-09-23"
-compatibility_flags = [ "nodejs_compat_v2" ]
+compatibility_flags = [ "nodejs_compat" ]
 
 [vars]
 NEXT_TELEMETRY_DISABLED = "1"
