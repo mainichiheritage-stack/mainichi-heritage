@@ -37,30 +37,35 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 1. node:module を含め、すべての node: 参照を otel-mock へ強制リダイレクト
-          # これにより、本物の node:module からの createRequire 読み込みを阻止します
+          # 1. node: 参照をすべて otel-mock へ（絶対に node:module も含める）
           perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 2. otel-mock.js 自体にも createRequire を追加（念のための二段構え）
+          # 2. otel-mock.js 自体にも名前付きエクスポートを保証
           echo "export const createRequire = () => () => ({});" >> dist/otel-mock.js
+          echo "export const versions = { node: '22.0.0' };" >> dist/otel-mock.js
 
-          # 3. コード内の呼び出し箇所をさらに強力に置換
-          # スペースや改行が含まれていても置換されるように拡張
-          perl -pi -e 's/createRequire\s*\([^\)]*\)/(()=>()=>({}))()/g' dist/_worker.mjs
-
-          # 4. 実行時 Shim (グローバル汚染の最小化)
+          # 3. 実行時 Shim の注入 (import 文の後ろに挿入するために結合順序を工夫)
+          # 先頭に置くと import 文と衝突しやすいため、変数はグローバル経由で確保
           cat << 'EOF' > dist/header.tmp
           globalThis.api = {};
           globalThis.opentelemetry = {};
-          globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };
+          globalThis.process = { env: { NODE_ENV: 'production' }, versions: { node: '22.0.0' }, nextTick: (f) => setTimeout(f, 0) };
           globalThis.createRequire = () => () => ({});
           EOF
 
-          # 5. 結合
+          # header を先頭に結合
           cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
           mv dist/final_worker.mjs dist/_worker.mjs
+
+          # 4. 【最重要】ESM としての default export を末尾に強制付与
+          # OpenNext の index.mjs は通常 export default { fetch: ... } を持っていますが
+          # 念のため壊れていないか確認し、無ければ追加します
+          if ! grep -q "export default" dist/_worker.mjs; then
+            echo "" >> dist/_worker.mjs
+            echo "export default { fetch: (request, env, ctx) => { return globalThis.originalFetch(request, env, ctx); } };" >> dist/_worker.mjs
+          fi
 
       - name: Deploy to Cloudflare
         working-directory: frontend
