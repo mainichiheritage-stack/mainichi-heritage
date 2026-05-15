@@ -13,22 +13,25 @@ const createSafeMock = () => {
   return new Proxy(mock, {
     get: (target, prop) => {
       if (prop === "createContextKey") return () => Symbol.for("ck");
-      // require.resolve() や path.resolve() 等への対応
       if (prop === "resolve") return () => "";
       if (prop === "toStringTag") return "Module";
-      return mock;
+
+      return target;
     },
   });
 };
 
 const safeMock = createSafeMock();
 
-// ESM exports
+// CommonJS 形式
+if (typeof module !== "undefined") {
+  module.exports = safeMock;
+  module.exports.api = safeMock;
+  module.exports.opentelemetry = safeMock;
+  module.exports.default = safeMock;
+}
+
+// ESM 形式
 export const api = safeMock;
 export const opentelemetry = safeMock;
 export default safeMock;
-
-// CommonJS exports
-if (typeof module !== "undefined") {
-  module.exports = safeMock;
-}

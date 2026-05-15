@@ -30,26 +30,18 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Force ESM Wrapper
+      - name: Force ESM Wrapper & Physical Patch
         working-directory: frontend
         run: |
           mkdir -p dist
+          # 1. 成果物のコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
-          cp otel-mock.mjs dist/otel-mock.mjs
+          cp otel-mock.js dist/otel-mock.js
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 【最終解決：物理パッチ】
-          # 1. api2.createContextKey や e.createContextKey などの呼び出しを、
-          #    変数名に関わらず Symbol を返す即時関数に置換します。
-          #    ※末尾の ( ) まで含めて置換するのがコツです。
-          sed -i 's/[a-zA-Z0-9_]*\.createContextKey()/(()=>Symbol.for("ck"))()/g' dist/_worker.mjs
-
-          # 2. 万が一、関数定義として参照されている場合もカバーします
-          sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g' dist/_worker.mjs
-
-          # 3. 本番用ラッパー index.js の生成
+          # 2. 本番用ラッパー index.js の生成 (otel-mock.js を使用)
           cat <<EOF > dist/index.js
-          import * as otel from './otel-mock.mjs';
+          import * as otel from './otel-mock.js';
           const mock = otel.default;
 
           const dummyRequire = (id) => mock;
@@ -73,7 +65,6 @@ jobs:
             async fetch(request, env, ctx) {
               try {
                 if (!memoizedWorker) {
-                  // _worker.mjs を読み込む前に、上記の global プロパティが確定している必要があります
                   const worker = await import("./_worker.mjs");
                   memoizedWorker = worker.default || worker;
                 }
@@ -87,6 +78,10 @@ jobs:
             }
           };
           EOF
+
+          # 3. 【最終兵器：再帰的物理パッチ】
+          # dist内の全JS/MJSファイルに対し、api2.createContextKey等の呼び出しをSymbolに強制置換
+          find dist -type f \( -name "*.mjs" -o -name "*.js" \) -exec sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g' {} +
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
@@ -102,4 +97,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          command: deploy
+          # 物理パッチを破壊しないよう minify を無効化してデプロイ
+          command: deploy --no-minify
