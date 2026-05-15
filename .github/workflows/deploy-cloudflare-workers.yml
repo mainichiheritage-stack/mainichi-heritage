@@ -30,7 +30,7 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Preparation for Wrangler (Final Nuclear Option)
+      - name: Final Integrity Strategy (Direct Injection)
         working-directory: frontend
         run: |
           mkdir -p dist
@@ -38,53 +38,23 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 2. 【最重要】あらゆる引用符で囲まれた node:fs などの文字列を物理置換
-          # node:fs, node:os, node:path など "node:" から始まるものを一網打尽にします
-          # 巨大な1行ファイルでも確実に置換できるよう perl の -0777 オプション（全読み）を使用します
-          perl -0777 -pi -e 's/["'\''`]node:[a-z0-9\/._-]+["'\''`]/".\/otel-mock.js"/g' dist/_worker.mjs
-          perl -0777 -pi -e 's/["'\''`]next\/dist\/server\/next-server\.js["'\''`]/".\/otel-mock.js"/g' dist/_worker.mjs
+          # 2. モック注入コード（ヘッダー）の作成
+          echo 'const mock = () => mock; globalThis.api = mock; globalThis.opentelemetry = mock; globalThis.require = (id) => mock;' > dist/header.js
 
-          # 3. インポート文の形式（from "fs" など）も個別に置換
-          perl -0777 -pi -e 's/from\s+["'\''`](fs|os|path|child_process|crypto)["'\''`]/from ".\/otel-mock.js"/g' dist/_worker.mjs
+          # 3. Perlを使用して巨大な1行ファイルから node: 参照を抹殺
+          perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
+          perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
+          perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 4. エントリーポイント index.js の作成
-          cat <<EOF > dist/index.js
-          import mock from './otel-mock.js';
-          Object.defineProperties(globalThis, {
-            api: { value: mock, enumerable: true },
-            opentelemetry: { value: mock, enumerable: true },
-            require: { value: (id) => mock, configurable: true }
-          });
-          export default {
-            async fetch(r, e, c) {
-              try {
-                const w = await import('./_worker.mjs');
-                const t = w.handler || w.default || w;
-                return (typeof t === 'function') ? await t(r, e, c) : await t.fetch(r, e, c);
-              } catch (err) {
-                return new Response("Worker Execution Error:\n" + err.stack, { 
-                  status: 500, 
-                  headers: { "Content-Type": "text/plain" } 
-                });
-              }
-            }
-          };
-          EOF
+          # 4. ヘッダーと本体を物理的に結合
+          cat dist/header.js dist/_worker.mjs > dist/final_worker.mjs
+          mv dist/final_worker.mjs dist/_worker.mjs
 
-          # 5. 最終チェック：もし node:fs が残っていたらここでビルドを止める
+          # 5. 最終チェック：もし node:fs が残っていたら落とす
           if grep -q "node:fs" dist/_worker.mjs; then
-            echo "🚨 CRITICAL ERROR: node:fs still exists in _worker.mjs after replacement!"
+            echo "🚨 node:fs still exists!"
             exit 1
           fi
-          echo "✅ Success: node:fs has been purged."
-
-      - name: Physical Diet (The CI Hack)
-        working-directory: frontend
-        run: |
-          echo "export const codeFrameColumns = () => ''; export default { codeFrameColumns };" > node_modules/next/dist/compiled/babel/code-frame.js
-          echo "export default function() { return { transform: () => ({ code: '' }) }; }" > node_modules/next/dist/compiled/babel/bundle.js
-          echo "export default function() { return {}; }" > node_modules/next/dist/compiled/babel-packages/packages-bundle.js
-          echo "export const SourceMapConsumer = function(){}; export default { SourceMapConsumer };" > node_modules/next/dist/compiled/source-map/source-map.js
 
       - name: Deploy to Cloudflare
         working-directory: frontend
@@ -94,5 +64,4 @@ jobs:
         run: |
           cp wrangler.toml dist/wrangler.toml
           cd dist
-          ls -la
           npx wrangler deploy --no-bundle --config wrangler.toml
