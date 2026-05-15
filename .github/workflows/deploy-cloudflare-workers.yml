@@ -37,20 +37,19 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 1. すべての node: 参照を ./otel-mock.js へ
+          # 1. node: モジュールと特定の依存関係を otel-mock へリダイレクト
           perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 2. 変数注入方法の変更 (requireを自作せず、mockをglobalに置くだけにする)
-          # 前回の header.tmp の内容を以下に差し替え
-          echo 'globalThis.api = {}; globalThis.opentelemetry = {};' > dist/header.tmp
+          # 2. 衝突の原因となる require の自作を止め、最低限のグローバル空間だけ確保
+          echo 'globalThis.api = globalThis.api || {}; globalThis.opentelemetry = globalThis.opentelemetry || {};' > dist/header.tmp
           cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
           mv dist/final_worker.mjs dist/_worker.mjs
 
-          # 3. WranglerがESMとして認識するためのエクスポート保証
-          if ! grep -q "export default" dist/_worker.mjs; then
-            echo "export default { fetch: (r,e,c) => { throw new Error('Export not found'); } };" >> dist/_worker.mjs
+          # 3. エクスポートが失われていないかチェック
+          if ! grep -q "export " dist/_worker.mjs; then
+            echo "export default { fetch: (r,e,c) => { throw new Error('Worker entry point missing'); } };" >> dist/_worker.mjs
           fi
 
       - name: Deploy to Cloudflare
