@@ -1,7 +1,9 @@
 name = "mainichi-heritage-frontend"
-main = "dist/index.js"
+main = "index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = [ "nodejs_compat" ]
+
+base_dir = "dist"
 
 [vars]
 NEXT_TELEMETRY_DISABLED = "1"
@@ -9,4 +11,4 @@ NODE_ENV = "production"
 
 [[rules]]
 type = "ESModule"
-globs = ["dist/*.js", "dist/*.mjs"]
+globs = ["*.js", "*.mjs"]
