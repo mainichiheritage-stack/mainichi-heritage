@@ -12,7 +12,22 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:process (今回のエラー 'env' を解決)
+// node:fs (今回のエラー 'ReadStream' を解決)
+export const ReadStream = safe;
+export const WriteStream = safe;
+export const promises = safe;
+export const readFileSync = () => "";
+export const existsSync = () => true;
+export const writeFile = safe;
+export const readFile = safe;
+export const mkdir = safe;
+export const stat = safe;
+export const readdir = safe;
+export const lstat = safe;
+export const createReadStream = safe;
+export const createWriteStream = safe;
+
+// node:process
 export const env = globalThis.process?.env || {};
 export const nextTick = globalThis.queueMicrotask || safe;
 export const cwd = () => "/";
@@ -37,17 +52,6 @@ export const Writable = safe;
 export const Transform = safe;
 export const Duplex = safe;
 export const EventEmitter = safe;
-
-// node:fs
-export const promises = safe;
-export const readFileSync = () => "";
-export const existsSync = () => true;
-export const writeFile = safe;
-export const readFile = safe;
-export const mkdir = safe;
-export const stat = safe;
-export const readdir = safe;
-export const lstat = safe;
 
 // node:os
 export const release = () => "1.0.0";
