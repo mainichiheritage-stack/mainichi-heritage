@@ -12,7 +12,19 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:process (今回のエラー 'versions' を解決)
+// node:path (今回のエラー 'sep' を解決)
+export const sep = "/";
+export const delimiter = ":";
+export const join = safe;
+export const resolve = safe;
+export const normalize = safe;
+export const basename = safe;
+export const dirname = safe;
+export const extname = safe;
+export const relative = safe;
+export const isAbsolute = () => true;
+
+// node:process
 export const versions = { node: "22.0.0", v8: "12.0.0", uv: "1.0.0" };
 export const env = globalThis.process?.env || {};
 export const nextTick = globalThis.queueMicrotask || safe;
@@ -75,7 +87,6 @@ export const EventEmitter = safe;
 
 // node:os
 export const release = () => "1.0.0";
-// platform, arch は process と重複することが多いため両方に定義
 export const hostname = () => "localhost";
 export const homedir = () => "/";
 export const tmpdir = () => "/tmp";
@@ -83,15 +94,12 @@ export const type = () => "Linux";
 export const uptime = () => 0;
 export const cpus = () => [];
 
-// node:util / node:url / node:path / node:querystring
+// node:util / node:url / node:querystring
 export const promisify = (f) => f;
 export const inherits = safe;
 export const format = safe;
 export const inspect = safe;
 export const URL = globalThis.URL;
-export const join = safe;
-export const resolve = safe;
-export const normalize = safe;
 export const parse = safe;
 export const stringify = safe;
 
