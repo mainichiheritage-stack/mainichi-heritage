@@ -42,7 +42,6 @@ jobs:
           echo "export default () => {};" > dist/wrangler-noop.mjs
 
           # 最終的なエントリーポイント dist/index.js の作成
-          # 物理破壊(sed)はせず、実行時にグローバルをモックに差し替える
           cat <<EOF > dist/index.js
           import mock from './otel-mock.js';
 
@@ -59,6 +58,15 @@ jobs:
             }
           };
           EOF
+
+      - name: Physical Diet (The CI Hack)
+        working-directory: frontend
+        run: |
+          # 巨大なBabelやSourceMapを空のモジュールに差し替えて軽量化（3MB制限対策）
+          echo "export const codeFrameColumns = () => ''; export default { codeFrameColumns };" > node_modules/next/dist/compiled/babel/code-frame.js
+          echo "export default function() { return { transform: () => ({ code: '' }) }; }" > node_modules/next/dist/compiled/babel/bundle.js
+          echo "export default function() { return {}; }" > node_modules/next/dist/compiled/babel-packages/packages-bundle.js
+          echo "export const SourceMapConsumer = function(){}; export default { SourceMapConsumer };" > node_modules/next/dist/compiled/source-map/source-map.js
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
