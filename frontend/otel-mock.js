@@ -17,6 +17,7 @@ export const request = safe;
 export const get = safe;
 export const Agent = safe;
 export const createServer = safe;
+export const normalize = safe;
 
 // node:buffer
 export const Buffer = globalThis.Buffer || safe;
