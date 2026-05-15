@@ -1,37 +1,54 @@
 const mock = () => mock;
 
-// あらゆるプロパティ参照に対して自分自身（プロキシ）を返す万能プロキシ
 const safe = new Proxy(mock, {
   get: (target, prop) => {
-    // ESMのデフォルトエクスポートとして自分を返す
     if (prop === "default") return safe;
-    // Next.jsが内部でシンボルを触ることがあるため
     if (typeof prop === "symbol") return undefined;
-    // それ以外（Readable, promises, readFileSync等）は何を聞かれてもこのプロキシを返す
     return safe;
   },
-  // 関数として実行されても（例: mock()）このプロキシを返す
   apply: () => safe,
-  // new 演算子で呼ばれても（例: new Readable()）このプロキシを返す
   construct: () => safe,
 });
 
-// --- 名前付きエクスポート (Cloudflareのバリデーション対策) ---
-// Error: does not provide an export named 'X' と言われたらここに足す
+// --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:stream / node:fs 関連
+// node:stream / node:events
 export const Readable = safe;
 export const Writable = safe;
 export const Transform = safe;
 export const Duplex = safe;
 export const EventEmitter = safe;
+
+// node:fs
 export const promises = safe;
 export const readFileSync = () => "";
 export const existsSync = () => true;
+export const writeFile = safe;
+export const readFile = safe;
 
-// OpenTelemetry / API 関連
+// node:os (今回のエラー 'release' を含む)
+export const release = () => "1.0.0";
+export const platform = () => "linux";
+export const arch = () => "x64";
+export const hostname = () => "localhost";
+export const homedir = () => "/";
+export const tmpdir = () => "/tmp";
+export const type = () => "Linux";
+export const uptime = () => 0;
+export const cpus = () => [];
+
+// node:util / node:url / node:crypto
+export const promisify = (f) => f;
+export const inherits = safe;
+export const format = safe;
+export const inspect = safe;
+export const URL = globalThis.URL;
+export const randomBytes = safe;
+export const createHash = safe;
+
+// OpenTelemetry & Others
 export const api = safe;
 export const opentelemetry = safe;
 
-// デフォルトエクスポート
+// デフォルト
 export default safe;
