@@ -30,7 +30,7 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Preparation for Wrangler (Final Strategy)
+      - name: Preparation for Wrangler (Ultra Aggressive Strategy)
         working-directory: frontend
         run: |
           mkdir -p dist
@@ -55,7 +55,6 @@ jobs:
             async fetch(request, env, ctx) {
               try {
                 const worker = await import('./_worker.mjs');
-                // handler -> default -> worker 自体の順でハンドラを探索
                 const target = worker.handler || worker.default || worker;
 
                 if (typeof target === 'function') {
@@ -76,10 +75,15 @@ jobs:
           };
           EOF
 
-          grep "node:fs" dist/_worker.mjs || echo "No node:fs found in text"
+          # node:系、next/系、その他解決不能な全外部インポートを ./otel-mock.js に向ける
+          # 1. node: / next: / next/ などの文字列パスを物理的に書き換え
+          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E "s/['\"\`](node:[a-z0-9\/._-]+|next\/[a-z0-9\/._-]+|next:[a-z0-9\/._-]+)['\"\']/\".\/otel-mock.js\"/g"
 
-          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E 's/import.*from ["'\''`](node:|next\/|@opentelemetry\/)[^"'\''`]+["'\''`]/import mock from ".\/otel-mock.js"/g'
-          sed -i '1s/^/const next = { dist: { server: { nextServer: () => {} } } };\n/' dist/_worker.mjs
+          # 2. 静的な import ... from "node:xxx" 形式を完全に無力化
+          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E "s/from\s+['\"\`](node:[a-z0-9\/._-]+|next\/[a-z0-9\/._-]+)['\"\']/from \".\/otel-mock.js\"/g"
+
+          # 3. 最後に残った "next/dist/server/..." のような複雑なパスを個別撃破
+          sed -i 's/["'\'']next\/dist\/server\/next-server\.js["'\'']/"\.\/otel-mock\.js"/g' dist/_worker.mjs
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
@@ -95,14 +99,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # 1. wrangler.toml を dist の中にコピー
           cp wrangler.toml dist/wrangler.toml
-
-          # 2. dist ディレクトリに移動
           cd dist
-
-          # 3. 状態確認
           ls -la
-
-          # 4. デプロイ実行
           npx wrangler deploy --no-bundle --config wrangler.toml
