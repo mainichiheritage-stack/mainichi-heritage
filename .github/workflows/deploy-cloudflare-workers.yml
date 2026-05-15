@@ -30,60 +30,49 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Preparation for Wrangler (Ultra Aggressive Strategy)
+      - name: Preparation for Wrangler (Binary-Level Replacement)
         working-directory: frontend
         run: |
           mkdir -p dist
-          # Open-Nextの成果物をコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
-          # モックファイルをコピー
           cp otel-mock.js dist/otel-mock.js
-          # ミドルウェア代わりの空ファイル作成
           echo "export default () => {};" > dist/wrangler-noop.mjs
 
-          # 最終的なエントリーポイント dist/index.js の作成
+          # エントリーポイントの作成
           cat <<EOF > dist/index.js
           import mock from './otel-mock.js';
-
           Object.defineProperties(globalThis, {
             api: { value: mock, enumerable: true },
             opentelemetry: { value: mock, enumerable: true },
             require: { value: (id) => mock, configurable: true }
           });
-
           export default {
-            async fetch(request, env, ctx) {
+            async fetch(r, e, c) {
               try {
-                const worker = await import('./_worker.mjs');
-                const target = worker.handler || worker.default || worker;
-
-                if (typeof target === 'function') {
-                  return await target(request, env, ctx);
-                }
-                if (target && typeof target.fetch === 'function') {
-                  return await target.fetch(request, env, ctx);
-                }
-                throw new Error('No fetch handler found in _worker.mjs');
-              } catch (e) {
-                console.error("Worker Execution Error:", e.stack || e);
-                return new Response("Worker Error: \n" + (e.stack || e.message || e), { 
-                  status: 500,
-                  headers: { "Content-Type": "text/plain" }
-                });
+                const w = await import('./_worker.mjs');
+                const t = w.handler || w.default || w;
+                return (typeof t === 'function') ? await t(r, e, c) : await t.fetch(r, e, c);
+              } catch (err) {
+                return new Response(err.stack, { status: 500 });
               }
             }
           };
           EOF
 
-          # node:系、next/系、その他解決不能な全外部インポートを ./otel-mock.js に向ける
-          # 1. node: / next: / next/ などの文字列パスを物理的に書き換え
-          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E "s/['\"\`](node:[a-z0-9\/._-]+|next\/[a-z0-9\/._-]+|next:[a-z0-9\/._-]+)['\"\']/\".\/otel-mock.js\"/g"
+          # 1. 改行のない巨大なファイルでも機能するように、ファイル全体をメモリに展開して置換
+          # 2. node:fs や node:os だけでなく、"node:" で始まるあらゆる文字列を強制的に書き換えます
+          # 3. / ではなく | を区切り文字に使い、パスのバックスラッシュ問題を回避
+          perl -pi -e 's|["'\''`]node:[a-z0-9/._-]+["'\''`]|"./otel-mock.js"|g' dist/_worker.mjs
+          perl -pi -e 's|["'\''`]next/dist/server/next-server\.js["'\''`]|"./otel-mock.js"|g' dist/_worker.mjs
 
-          # 2. 静的な import ... from "node:xxx" 形式を完全に無力化
-          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E "s/from\s+['\"\`](node:[a-z0-9\/._-]+|next\/[a-z0-9\/._-]+)['\"\']/from \".\/otel-mock.js\"/g"
+          # 4. node: が付かない古い形式の fs, os, child_process も全滅させます
+          perl -pi -e 's|from\s+["'\''`](fs|os|path|child_process)["'\''`]|from "./otel-mock.js"|g' dist/_worker.mjs
 
-          # 3. 最後に残った "next/dist/server/..." のような複雑なパスを個別撃破
-          sed -i 's/["'\'']next\/dist\/server\/next-server\.js["'\'']/"\.\/otel-mock\.js"/g' dist/_worker.mjs
+          # 最終確認：もし node:fs が残っていたら、ビルドを失敗させてデプロイを防ぐ
+          if grep -q "node:fs" dist/_worker.mjs; then
+            echo "FAILED: node:fs still exists!"
+            exit 1
+          fi
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
