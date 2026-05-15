@@ -37,19 +37,22 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 1. node: モジュールと特定の依存関係を otel-mock へリダイレクト
+          # 1. node: 参照をすべて otel-mock へ向ける (これは継続)
           perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 2. 衝突の原因となる require の自作を止め、最低限のグローバル空間だけ確保
+          # 2. 衝突の原因となる自作 require の注入を廃止
+          # 最低限必要なグローバルオブジェクトの初期化だけに留める
           echo 'globalThis.api = globalThis.api || {}; globalThis.opentelemetry = globalThis.opentelemetry || {};' > dist/header.tmp
+
+          # 3. 結合 (元のコードの 1 行目にある import 文を壊さないよう、先頭に最小限の変数を置く)
           cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
           mv dist/final_worker.mjs dist/_worker.mjs
 
-          # 3. エクスポートが失われていないかチェック
+          # 4. ESM エクスポートの存在確認
           if ! grep -q "export " dist/_worker.mjs; then
-            echo "export default { fetch: (r,e,c) => { throw new Error('Worker entry point missing'); } };" >> dist/_worker.mjs
+            echo "export default { fetch: (r,e,c) => { throw new Error('Entry point not found'); } };" >> dist/_worker.mjs
           fi
 
       - name: Deploy to Cloudflare
