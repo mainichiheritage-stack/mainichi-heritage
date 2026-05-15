@@ -51,24 +51,27 @@ jobs:
             require: { value: (id) => mock, configurable: true }
           });
 
-          function getWorkerTarget(worker) {
-            return worker.handler || worker.default || worker;
-          }
-
           export default {
             async fetch(request, env, ctx) {
-              const worker = await import('./_worker.mjs');
-              const target = getWorkerTarget(worker);
+              try {
+                const worker = await import('./_worker.mjs');
+                // handler -> default -> worker 自体の順でハンドラを探索
+                const target = worker.handler || worker.default || worker;
 
-              if (typeof target === 'function') {
-                return await target(request, env, ctx);
+                if (typeof target === 'function') {
+                  return await target(request, env, ctx);
+                }
+                if (target && typeof target.fetch === 'function') {
+                  return await target.fetch(request, env, ctx);
+                }
+                throw new Error('No fetch handler found in _worker.mjs');
+              } catch (e) {
+                console.error("Worker Execution Error:", e.stack || e);
+                return new Response("Worker Error: \n" + (e.stack || e.message || e), { 
+                  status: 500,
+                  headers: { "Content-Type": "text/plain" }
+                });
               }
-
-              if (typeof target.fetch === 'function') {
-                return await target.fetch(request, env, ctx);
-              }
-
-              throw new Error('No fetch handler found in _worker.mjs');
             }
           };
           EOF
@@ -76,7 +79,6 @@ jobs:
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
         run: |
-          # 巨大なBabelやSourceMapを空のモジュールに差し替えて軽量化（3MB制限対策）
           echo "export const codeFrameColumns = () => ''; export default { codeFrameColumns };" > node_modules/next/dist/compiled/babel/code-frame.js
           echo "export default function() { return { transform: () => ({ code: '' }) }; }" > node_modules/next/dist/compiled/babel/bundle.js
           echo "export default function() { return {}; }" > node_modules/next/dist/compiled/babel-packages/packages-bundle.js
