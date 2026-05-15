@@ -12,7 +12,23 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:child_process (今回のエラー 'exec' を解決)
+// node:async_hooks (今回のエラー 'AsyncLocalStorage' を解決)
+export const AsyncLocalStorage =
+  globalThis.AsyncLocalStorage ||
+  class {
+    enterWith(value) {
+      this.value = value;
+    }
+    run(value, callback) {
+      return callback();
+    }
+    getStore() {
+      return this.value;
+    }
+  };
+export const AsyncResource = safe;
+
+// node:child_process
 export const exec = safe;
 export const execSync = safe;
 export const spawn = safe;
