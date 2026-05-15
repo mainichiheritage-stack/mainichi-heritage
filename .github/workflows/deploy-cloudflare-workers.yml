@@ -37,22 +37,29 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 1. すべての node: 参照を ./otel-mock.js へ
+          # 1. node: 参照をすべて ./otel-mock.js へ
           perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 2. 変数衝突を避けるためのグローバル定義
-          # 'var process' ではなく 'globalThis.process' を使うことで import 文との衝突を回避
-          echo 'globalThis.api = {}; globalThis.opentelemetry = {}; globalThis.process = { env: {}, versions: { node: "22.0.0" }, nextTick: globalThis.queueMicrotask };' > dist/header.tmp
+          # 2. 実行時エラーを回避するための Shim を注入
+          # createRequire が undefined で落ちるのを防ぐため、ダミー関数をグローバルに配置
+          cat << 'EOF' > dist/header.tmp
+          globalThis.api = {};
+          globalThis.opentelemetry = {};
+          globalThis.process = { env: {}, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };
+          // node:module の createRequire 対策
+          const dummyRequire = () => ({});
+          globalThis.module = { createRequire: () => dummyRequire };
+          EOF
 
           # 3. 結合
           cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
           mv dist/final_worker.mjs dist/_worker.mjs
 
-          # 4. エクスポート保証
+          # 4. エクスポートが失われていないか最終確認
           if ! grep -q "export " dist/_worker.mjs; then
-            echo "export default { fetch: (r,e,c) => { return new Response('Worker entry point missing'); } };" >> dist/_worker.mjs
+            echo "export default { fetch: (r,e,c) => new Response('Entry Not Found') };" >> dist/_worker.mjs
           fi
 
       - name: Deploy to Cloudflare
