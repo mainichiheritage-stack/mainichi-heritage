@@ -12,6 +12,9 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
+// node:buffer (今回のエラー 'Buffer' を解決)
+export const Buffer = globalThis.Buffer || safe;
+
 // node:stream / node:events
 export const Readable = safe;
 export const Writable = safe;
@@ -27,6 +30,7 @@ export const writeFile = safe;
 export const readFile = safe;
 export const mkdir = safe;
 export const stat = safe;
+export const readdir = safe;
 
 // node:os
 export const release = () => "1.0.0";
@@ -39,14 +43,16 @@ export const type = () => "Linux";
 export const uptime = () => 0;
 export const cpus = () => [];
 
-// node:util / node:url
+// node:util / node:url / node:path
 export const promisify = (f) => f;
 export const inherits = safe;
 export const format = safe;
 export const inspect = safe;
 export const URL = globalThis.URL;
+export const join = safe;
+export const resolve = safe;
 
-// node:crypto (createHmac を追加)
+// node:crypto
 export const createHash = safe;
 export const createHmac = safe;
 export const randomBytes = safe;
