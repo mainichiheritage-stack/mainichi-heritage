@@ -12,6 +12,21 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (バリデーションを完全に沈黙させるリスト) ---
 
+// node:http / node:https (今回のエラー 'request' を含む)
+export const request = safe;
+export const get = safe;
+export const Agent = safe;
+export const createServer = safe;
+
+// node:zlib (圧縮関連)
+export const createGzip = safe;
+export const createGunzip = safe;
+export const createDeflate = safe;
+export const inflate = safe;
+export const deflate = safe;
+export const gunzip = safe;
+export const gzip = safe;
+
 // node:module
 export const createRequire = () => () => ({});
 
@@ -25,7 +40,7 @@ export const arch = "x64";
 export const argv = [];
 export const pid = 1;
 
-// node:os (今回のエラー 'release' を含む)
+// node:os
 export const release = () => "1.0.0";
 export const hostname = () => "localhost";
 export const homedir = () => "/";
