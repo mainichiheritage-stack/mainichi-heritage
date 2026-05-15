@@ -12,7 +12,20 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:fs (今回のエラー 'fstatSync' を解決)
+// node:process (今回のエラー 'versions' を解決)
+export const versions = { node: "22.0.0", v8: "12.0.0", uv: "1.0.0" };
+export const env = globalThis.process?.env || {};
+export const nextTick = globalThis.queueMicrotask || safe;
+export const cwd = () => "/";
+export const stderr = safe;
+export const stdout = safe;
+export const stdin = safe;
+export const argv = [];
+export const pid = 1;
+export const platform = "linux";
+export const arch = "x64";
+
+// node:fs
 export const fstatSync = () => ({ size: 0, mtime: new Date() });
 export const statSync = () => ({ size: 0, mtime: new Date() });
 export const lstatSync = () => ({ size: 0, mtime: new Date() });
@@ -44,16 +57,6 @@ export const timingSafeEqual = safe;
 export const getCipherInfo = safe;
 export const webcrypto = globalThis.crypto || safe;
 
-// node:process
-export const env = globalThis.process?.env || {};
-export const nextTick = globalThis.queueMicrotask || safe;
-export const cwd = () => "/";
-export const stderr = safe;
-export const stdout = safe;
-export const stdin = safe;
-export const argv = [];
-export const pid = 1;
-
 // node:http / node:https
 export const request = safe;
 export const get = safe;
@@ -72,8 +75,7 @@ export const EventEmitter = safe;
 
 // node:os
 export const release = () => "1.0.0";
-export const platform = () => "linux";
-export const arch = () => "x64";
+// platform, arch は process と重複することが多いため両方に定義
 export const hostname = () => "localhost";
 export const homedir = () => "/";
 export const tmpdir = () => "/tmp";
