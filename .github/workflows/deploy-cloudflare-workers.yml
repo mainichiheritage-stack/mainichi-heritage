@@ -51,10 +51,24 @@ jobs:
             require: { value: (id) => mock, configurable: true }
           });
 
+          function getWorkerTarget(worker) {
+            return worker.handler || worker.default || worker;
+          }
+
           export default {
             async fetch(request, env, ctx) {
-              const worker = await import("./_worker.mjs");
-              return await (worker.default || worker).fetch(request, env, ctx);
+              const worker = await import('./_worker.mjs');
+              const target = getWorkerTarget(worker);
+
+              if (typeof target === 'function') {
+                return await target(request, env, ctx);
+              }
+
+              if (typeof target.fetch === 'function') {
+                return await target.fetch(request, env, ctx);
+              }
+
+              throw new Error('No fetch handler found in _worker.mjs');
             }
           };
           EOF
@@ -74,4 +88,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          command: deploy
+          command: deploy --no-bundle
