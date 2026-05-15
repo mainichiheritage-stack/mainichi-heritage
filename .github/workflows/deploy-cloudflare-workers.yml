@@ -78,8 +78,8 @@ jobs:
 
           grep "node:fs" dist/_worker.mjs || echo "No node:fs found in text"
 
-          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E 's/["'\''`]node:[a-zA-Z0-9_/:-]+["'\''`]/".\/otel-mock.js"/g'
-          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E 's/["'\''`](fs|os|path|child_process|crypto|events|util|url|buffer|stream|http|https|zlib|dns|net|tls|punycode|querystring|readline|vm)["'\''`]/".\/otel-mock.js"/g'
+          find dist -name "*.mjs" -o -name "*.js" | xargs sed -i -E 's/import.*from ["'\''`](node:|next\/|@opentelemetry\/)[^"'\''`]+["'\''`]/import mock from ".\/otel-mock.js"/g'
+          sed -i '1s/^/const next = { dist: { server: { nextServer: () => {} } } };\n/' dist/_worker.mjs
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
