@@ -42,24 +42,25 @@ jobs:
           perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 2. 実行時エラーを回避するための Shim を注入
-          # createRequire が undefined で落ちるのを防ぐため、ダミー関数をグローバルに配置
+          # 2. 【重要】createRequire の呼び出しを、エラーを投げないダミーに置換
+          # コード内の createRequire(xxx) を (()=>{return ()=>{}})() に書き換えて実行を無効化します
+          perl -pi -e 's/createRequire\([^\)]*\)/(\(\)=>{return \(\)=>{}})()/g' dist/_worker.mjs
+
+          # 3. 実行時 Shim の注入
           cat << 'EOF' > dist/header.tmp
           globalThis.api = {};
           globalThis.opentelemetry = {};
-          globalThis.process = { env: {}, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };
-          // node:module の createRequire 対策
-          const dummyRequire = () => ({});
-          globalThis.module = { createRequire: () => dummyRequire };
+          globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };
+          globalThis.module = { createRequire: () => () => ({}) };
           EOF
 
-          # 3. 結合
+          # 4. 結合
           cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
           mv dist/final_worker.mjs dist/_worker.mjs
 
-          # 4. エクスポートが失われていないか最終確認
+          # 5. エクスポート保証
           if ! grep -q "export " dist/_worker.mjs; then
-            echo "export default { fetch: (r,e,c) => new Response('Entry Not Found') };" >> dist/_worker.mjs
+            echo "export default { fetch: (r,e,c) => new Response('Worker entry point missing') };" >> dist/_worker.mjs
           fi
 
       - name: Deploy to Cloudflare
