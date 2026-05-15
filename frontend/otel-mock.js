@@ -12,7 +12,14 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:crypto (今回のエラー 'createPrivateKey' を解決)
+// node:child_process (今回のエラー 'exec' を解決)
+export const exec = safe;
+export const execSync = safe;
+export const spawn = safe;
+export const spawnSync = safe;
+export const fork = safe;
+
+// node:crypto
 export const createPrivateKey = safe;
 export const createPublicKey = safe;
 export const createSecretKey = safe;
