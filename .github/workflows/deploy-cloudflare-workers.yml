@@ -34,33 +34,28 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p dist
-          # 1. 成果物のコピー
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
           cp wrangler-noop.mjs dist/wrangler-noop.mjs
 
-          # 2. 本番用ラッパー index.js の生成 (otel-mock.js を使用)
+          # 1. ラッパー index.js の生成 (OTELをグローバルとモジュール両面で封殺)
           cat <<EOF > dist/index.js
           import * as otel from './otel-mock.js';
           const mock = otel.default;
 
-          const dummyRequire = (id) => mock;
-          dummyRequire.resolve = (id) => "";
-
+          // グローバルに定義
           Object.defineProperties(globalThis, {
             api: { value: mock, configurable: true, enumerable: true },
             opentelemetry: { value: mock, configurable: true, enumerable: true },
-            require: { value: dummyRequire, configurable: true, enumerable: true },
-            __dirname: { value: "/" },
-            __filename: { value: "/index.js" }
+            require: { value: (id) => mock, configurable: true, enumerable: true }
           });
+          globalThis.require.resolve = () => "";
 
           process.env.NEXT_OTEL_FETCH_DISABLED = "1";
           process.env.NEXT_TELEMETRY_DISABLED = "1";
           process.env.NODE_ENV = "production";
 
           let memoizedWorker;
-
           export default {
             async fetch(request, env, ctx) {
               try {
@@ -70,18 +65,22 @@ jobs:
                 }
                 return await memoizedWorker.fetch(request, env, ctx);
               } catch (e) {
-                return new Response(
-                  "CRITICAL_INIT_ERROR: " + e.message + "\n" + e.stack, 
-                  { status: 500, headers: { "Content-Type": "text/plain; charset=UTF-8" } }
-                );
+                return new Response("INIT_ERROR: " + e.message + "\n" + e.stack, { status: 500 });
               }
             }
           };
           EOF
 
-          # 3. 【最終兵器：再帰的物理パッチ】
-          # dist内の全JS/MJSファイルに対し、api2.createContextKey等の呼び出しをSymbolに強制置換
+          # 2. 【最重要：物理パッチの強化】
+          # エラーの元である api2.createContextKey の呼び出しを、変数名に関わらず Symbol を返す即時関数に書き換えます
+          # さらに、api2[... ] 形式も網羅します
+          echo "Applying physical patches..."
           find dist -type f \( -name "*.mjs" -o -name "*.js" \) -exec sed -i 's/[a-zA-Z0-9_]*\.createContextKey/(()=>Symbol.for("ck"))/g' {} +
+          find dist -type f \( -name "*.mjs" -o -name "*.js" \) -exec sed -i 's/[a-zA-Z0-9_]*\["createContextKey"\]/(()=>Symbol.for("ck"))/g' {} +
+
+          # 3. 置換が成功したかチェック（失敗していればここでログに出る）
+          echo "Verification: Checking for remaining createContextKey..."
+          grep -r "createContextKey" dist || echo "SUCCESS: No createContextKey found!"
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
@@ -98,3 +97,11 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
           command: deploy
+
+      - name: Debug problematic code
+        run: |
+          # エラーが出ている tracer.js 周辺を特定して表示
+          grep -C 20 "createContextKey" frontend/dist/_worker.mjs | head -n 100
+
+      - name: Check Open-Next output header
+        run: head -n 50 frontend/.open-next/server-functions/default/index.mjs
