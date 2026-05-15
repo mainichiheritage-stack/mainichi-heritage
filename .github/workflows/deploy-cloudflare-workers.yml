@@ -59,20 +59,28 @@ jobs:
           };
           EOF
 
-          # 1. 改行のない巨大なファイルでも機能するように、ファイル全体をメモリに展開して置換
-          # 2. node:fs や node:os だけでなく、"node:" で始まるあらゆる文字列を強制的に書き換えます
-          # 3. / ではなく | を区切り文字に使い、パスのバックスラッシュ問題を回避
-          perl -pi -e 's|["'\''`]node:[a-z0-9/._-]+["'\''`]|"./otel-mock.js"|g' dist/_worker.mjs
-          perl -pi -e 's|["'\''`]next/dist/server/next-server\.js["'\''`]|"./otel-mock.js"|g' dist/_worker.mjs
+          # 【修正版：Perlワンライナー】
+          # シェルのクォート干渉を防ぐため、正規表現内のクォートを . で代用、またはエスケープを最小化
 
-          # 4. node: が付かない古い形式の fs, os, child_process も全滅させます
-          perl -pi -e 's|from\s+["'\''`](fs|os|path|child_process)["'\''`]|from "./otel-mock.js"|g' dist/_worker.mjs
+          # 1. node: で始まるすべてのパスを置換
+          perl -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # 最終確認：もし node:fs が残っていたら、ビルドを失敗させてデプロイを防ぐ
+          # 2. next/dist/server/next-server.js を置換
+          perl -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
+
+          # 3. 古い形式の import ... from 'fs' などを一括置換
+          # ( ) をエスケープせずに済むよう、単純な文字列置換を繰り返します
+          perl -pi -e "s|from ['\"\`]fs['\"\`]|from './otel-mock.js'|g" dist/_worker.mjs
+          perl -pi -e "s|from ['\"\`]os['\"\`]|from './otel-mock.js'|g" dist/_worker.mjs
+          perl -pi -e "s|from ['\"\`]path['\"\`]|from './otel-mock.js'|g" dist/_worker.mjs
+          perl -pi -e "s|from ['\"\`]child_process['\"\`]|from './otel-mock.js'|g" dist/_worker.mjs
+
+          # 最終確認：node:fs が残っていないかチェック
           if grep -q "node:fs" dist/_worker.mjs; then
             echo "FAILED: node:fs still exists!"
             exit 1
           fi
+          echo "SUCCESS: Binary replacement completed."
 
       - name: Physical Diet (The CI Hack)
         working-directory: frontend
