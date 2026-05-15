@@ -12,18 +12,10 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (Cloudflareのバリデーションを完全に黙らせるリスト) ---
 
-// node:crypto / Web Crypto (今回のエラー 'getRandomValues' を解決)
-export const getRandomValues = (v) =>
-  globalThis.crypto?.getRandomValues(v) || v;
-export const randomFillSync = safe;
-export const createHash = safe;
-export const createHmac = safe;
-export const randomBytes = safe;
-export const timingSafeEqual = safe;
-export const getCipherInfo = safe;
-export const webcrypto = globalThis.crypto || safe;
-
-// node:fs
+// node:fs (今回のエラー 'fstatSync' を解決)
+export const fstatSync = () => ({ size: 0, mtime: new Date() });
+export const statSync = () => ({ size: 0, mtime: new Date() });
+export const lstatSync = () => ({ size: 0, mtime: new Date() });
 export const ReadStream = safe;
 export const WriteStream = safe;
 export const promises = safe;
@@ -33,10 +25,24 @@ export const writeFile = safe;
 export const readFile = safe;
 export const mkdir = safe;
 export const stat = safe;
-export const readdir = safe;
 export const lstat = safe;
+export const readdir = safe;
 export const createReadStream = safe;
 export const createWriteStream = safe;
+export const openSync = safe;
+export const closeSync = safe;
+export const readSync = safe;
+
+// node:crypto
+export const getRandomValues = (v) =>
+  globalThis.crypto?.getRandomValues(v) || v;
+export const randomFillSync = safe;
+export const createHash = safe;
+export const createHmac = safe;
+export const randomBytes = safe;
+export const timingSafeEqual = safe;
+export const getCipherInfo = safe;
+export const webcrypto = globalThis.crypto || safe;
 
 // node:process
 export const env = globalThis.process?.env || {};
