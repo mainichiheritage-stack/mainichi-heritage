@@ -28,7 +28,7 @@ jobs:
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: npm run build:cloudflare
+        run: CI=true npm run build:cloudflare -- --minify
 
       - name: Deploy to Cloudflare
         working-directory: frontend
