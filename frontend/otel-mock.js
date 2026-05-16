@@ -20,6 +20,32 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (バリデーションを通過させるための全リスト) ---
 
+// node:fs (今回の 'readFile' エラー対策)
+export const readFile = safe;
+export const readFileSync = () => "";
+export const writeFile = safe;
+export const writeFileSync = safe;
+export const promises = safe;
+export const fstatSync = () => ({ size: 0, mtime: new Date() });
+export const statSync = () => ({ size: 0, mtime: new Date() });
+export const lstatSync = () => ({ size: 0, mtime: new Date() });
+export const readdirSync = () => [];
+
+// node:stream / node:events / node:zlib
+export const Duplex = safe; // 前回の原因
+export const PassThrough = safe;
+export const Stream = safe;
+export const pipeline = safe;
+export const finished = safe;
+export const Readable = safe;
+export const Writable = safe;
+export const Transform = safe;
+export const EventEmitter = function () {
+  return safe;
+};
+export const createGzip = safe;
+export const createGunzip = safe;
+
 // node:url / node:querystring
 export const parse = safe;
 export const stringify = safe;
@@ -74,15 +100,6 @@ export const AsyncLocalStorage =
   };
 export const AsyncResource = safe;
 
-// node:fs
-export const fstatSync = () => ({ size: 0, mtime: new Date() });
-export const statSync = () => ({ size: 0, mtime: new Date() });
-export const lstatSync = () => ({ size: 0, mtime: new Date() });
-export const readFileSync = () => "";
-export const existsSync = () => true;
-export const readdirSync = () => [];
-export const promises = safe;
-
 // node:path
 export const sep = "/";
 export const delimiter = ":";
@@ -110,21 +127,6 @@ export const promisify = (f) => f;
 export const inherits = safe;
 export const types = safe;
 export const inspect = (v) => "";
-
-// node:zlib / node:stream / node:events
-export const createGzip = safe;
-export const createGunzip = safe;
-export const Readable = safe;
-export const Writable = safe;
-export const Transform = safe;
-export const Duplex = safe; // ← 今回のエラー原因！復活させました
-export const PassThrough = safe; // 先回り追加
-export const Stream = safe; // 先回り追加
-export const pipeline = safe; // 先回り追加
-export const finished = safe; // 先回り追加
-export const EventEmitter = function () {
-  return safe;
-};
 
 // node:child_process
 export const exec = safe;
