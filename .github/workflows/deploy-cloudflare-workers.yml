@@ -28,9 +28,7 @@ jobs:
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: |
-          export ESBUILD_BINARY_PATH=$(node -e "import('os').then(os => console.log(os.platform() === 'win32' ? '' : '/dev/null'))")
-          CI=true npm run build:cloudflare
+        run: CI=true npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
