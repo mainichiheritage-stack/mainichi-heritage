@@ -29,7 +29,7 @@ jobs:
       - name: Build Next.js for Cloudflare
         working-directory: frontend
         run: |
-          sed -i 's/(?g)^\\.\\(?:\\\/|\\\\)require-hook$/^\\.\\(?:\\\/|\\\\)require-hook$/g' node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js || true
+          sed -i 's/(?g)//g' node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js || true
           CI=true npm run build:cloudflare
 
       - name: Deploy to Cloudflare
