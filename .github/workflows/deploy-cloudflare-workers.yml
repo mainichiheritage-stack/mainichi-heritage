@@ -42,8 +42,14 @@ jobs:
           const fs = require('fs');
           let code = fs.readFileSync('dist/_worker.mjs', 'utf8');
 
-          // 置換対象のNode組み込みモジュール群
-          const builtins = ['fs', 'path', 'crypto', 'stream', 'os', 'http', 'https', 'net', 'tls', 'zlib', 'child_process', 'util', 'events', 'url', 'querystring', 'module', 'async_hooks', 'perf_hooks'];
+          // 置換対象のNode組み込みモジュール群（完全網羅版）
+          const builtins = [
+            'fs', 'path', 'crypto', 'stream', 'os', 'http', 'https', 'net', 'tls', 'zlib', 
+            'child_process', 'util', 'events', 'url', 'querystring', 'module', 'async_hooks', 
+            'perf_hooks', 'process', 'buffer', 'v8', 'vm', 'punycode', 'string_decoder', 
+            'diagnostics_channel', 'worker_threads', 'dns', 'dgram', 'tty', 'readline', 
+            'cluster', 'domain', 'inspector', 'repl', 'trace_events', 'wasi'
+          ];
 
           // 正規表現: from 'fs', import "node:fs" を正確にマッチ（JSONキーは無視）
           const moduleRegex = new RegExp(`(from|import)\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2`, 'g');
