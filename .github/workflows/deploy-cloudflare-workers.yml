@@ -28,7 +28,10 @@ jobs:
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: CI=true npm run build:cloudflare
+        env:
+          CI: true
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+        run: npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
