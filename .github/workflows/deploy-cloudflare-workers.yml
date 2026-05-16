@@ -24,11 +24,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: CI=true npm run build:cloudflare
+        run: ESBUILD_NO_SYNCHRONOUS_SERVICE=1 CI=true npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
