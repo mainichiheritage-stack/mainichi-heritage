@@ -47,7 +47,9 @@ services:
       # サーバー転送用
       - AXIOM_TOKEN=${NEXT_PUBLIC_AXIOM_TOKEN}
       - AXIOM_DATASET=${NEXT_PUBLIC_AXIOM_DATASET}
-    command: npm run dev -- --webpack
+      # Cloudflare開発モード
+      - CLOUDFLARE_DEV_MODE=${CLOUDFLARE_DEV_MODE:-false}
+    command: sh -c 'if [ "$CLOUDFLARE_DEV_MODE" = "true" ]; then npm run dev:cloudflare; else npm run dev; fi'
 
 volumes:
   db_data:
