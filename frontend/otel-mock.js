@@ -18,11 +18,7 @@ const safe = new Proxy(mock, {
   construct: () => safe,
 });
 
-// =========================================================================
-// --- 最終決戦用・全部盛りエクスポートリスト (JSONパースエラー対策版) ---
-// =========================================================================
-
-// --- node:fs (readFileSync を "{}" に修正) ---
+// --- node:fs ---
 export const ReadStream = safe;
 export const WriteStream = safe;
 export const readFile = safe;

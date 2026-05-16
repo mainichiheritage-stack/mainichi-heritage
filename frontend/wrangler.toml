@@ -13,3 +13,14 @@ NODE_ENV = "production"
 [[rules]]
 type = "ESModule"
 globs = ["*.js", "*.mjs"]
+
+# staging 設定
+[env.staging]
+name = "mainichi-heritage-frontend-stg"
+
+[env.staging.assets]
+directory = ".open-next/assets"
+
+[env.staging.vars]
+NEXT_TELEMETRY_DISABLED = "1"
+NODE_ENV = "production"

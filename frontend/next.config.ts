@@ -57,7 +57,7 @@ if (process.env.NODE_ENV === "development") {
 const axiomModule = AxiomConfig as unknown as AxiomModule;
 const withAxiom = axiomModule.withAxiom ?? axiomModule.default?.withAxiom;
 
-const isCloudflareBuild = true; // 今回のブランチでのデプロイ時は強制的に true にして安全性を最優先します
+const isCloudflareBuild = true;
 
 const finalConfig =
   typeof withAxiom === "function" && !isCloudflareBuild
