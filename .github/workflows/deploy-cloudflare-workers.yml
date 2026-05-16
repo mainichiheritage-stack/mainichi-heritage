@@ -30,7 +30,7 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Final Integrity Strategy (Precision Patching)
+      - name: Final Integrity Strategy (Precision Patching & Bottom Injection)
         working-directory: frontend
         run: |
           mkdir -p dist
@@ -51,7 +51,7 @@ jobs:
             'cluster', 'domain', 'inspector', 'repl', 'trace_events', 'wasi'
           ];
 
-          // 正規表現: from 'fs', import "node:fs" を正確にマッチ（JSONキーは無視）
+          // 正規表現: from 'fs', import "node:fs" を正確にマッチ
           const moduleRegex = new RegExp(`(from|import)\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2`, 'g');
           // 正規表現: require('fs'), import('node:fs') を正確にマッチ
           const requireRegex = new RegExp(`(require|import)\\s*\\(\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2\\s*\\)`, 'g');
@@ -72,11 +72,9 @@ jobs:
           # 2. Node.jsで安全にパッチを実行
           node dist/patch.js
 
-          # 3. 最小限のグローバル定義
-          echo 'globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };' > dist/header.tmp
-
-          cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
-          mv dist/final_worker.mjs dist/_worker.mjs
+          # 3. 【修正】先頭への cat をやめ、ファイルの末尾にグローバル定義を安全に追記
+          echo "" >> dist/_worker.mjs
+          echo 'globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };' >> dist/_worker.mjs
 
           # 4. ESM default export 保証
           if ! grep -q "export default" dist/_worker.mjs; then
