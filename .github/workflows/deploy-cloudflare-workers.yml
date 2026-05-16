@@ -28,9 +28,10 @@ jobs:
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: |
-          find node_modules -type f -name "esbuild" -executable -exec mv {} {}.bak \; 2>/dev/null || true
-          CI=true npm run build:cloudflare
+        env:
+          NODE_OPTIONS: "--harmony-invalid-regexp"
+          CI: true
+        run: npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
