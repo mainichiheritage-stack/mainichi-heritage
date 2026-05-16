@@ -28,9 +28,10 @@ jobs:
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: |
-          sed -i 's/(?g)//g' node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js || true
-          CI=true npm run build:cloudflare
+        env:
+          V8_FLAGS: "--harmony-invalid-regexp"
+          CI: true
+        run: npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
