@@ -28,7 +28,10 @@ jobs:
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        run: CI=true npm run build:cloudflare
+        env:
+          ESBUILD_BINARY_PATH: "node_modules/esbuild/bin/esbuild"
+          CI: true
+        run: npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
