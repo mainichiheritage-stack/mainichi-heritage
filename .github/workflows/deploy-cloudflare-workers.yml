@@ -37,12 +37,27 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 1. 完璧な精度を誇るパッチスクリプト（patch.js）を生成
+          # 1. JSONパースエラーを物理的にすり抜ける救済ロジック付きのパッチスクリプト
           cat << 'EOF' > dist/patch.js
           const fs = require('fs');
           let code = fs.readFileSync('dist/_worker.mjs', 'utf8');
 
-          // 置換対象のNode組み込みモジュール群（完全網羅版）
+          // 【最重要】JSON.parse を実行時ではなく、ファイルそのもののテキストレベルで安全な関数に差し替える
+          // これにより、2行目の OpenNext 組み込み JSON.parse が壊れていても、安全に空のオブジェクト {} に逃がします
+          const jsonRescueShim = `
+            const _safeParse = (str) => {
+              if (!str || typeof str !== 'string' || str.trim() === '') return {};
+              try { return JSON.parse(str); } catch (e) { return {}; }
+            };
+          `;
+
+          // ファイルの先頭付近（2行目より前）に救済関数を注入
+          code = jsonRescueShim + code;
+
+          // コード内のすべての 「JSON.parse(」 を 「_safeParse(」 に強制置換
+          code = code.replace(/JSON\.parse\s*\(/g, '_safeParse(');
+
+          // 置換対象のNode組み込みモジュール群
           const builtins = [
             'fs', 'path', 'crypto', 'stream', 'os', 'http', 'https', 'net', 'tls', 'zlib', 
             'child_process', 'util', 'events', 'url', 'querystring', 'module', 'async_hooks', 
@@ -51,19 +66,14 @@ jobs:
             'cluster', 'domain', 'inspector', 'repl', 'trace_events', 'wasi'
           ];
 
-          // 正規表現: from 'fs', import "node:fs" を正確にマッチ
           const moduleRegex = new RegExp(`(from|import)\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2`, 'g');
-          // 正規表現: require('fs'), import('node:fs') を正確にマッチ
           const requireRegex = new RegExp(`(require|import)\\s*\\(\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2\\s*\\)`, 'g');
 
           code = code.replace(moduleRegex, `$1 './otel-mock.js'`);
           code = code.replace(requireRegex, `$1('./otel-mock.js')`);
 
-          // Next.js特有のサーバーモジュールもモックへ向ける
           code = code.replace(/(from|import)\s*(['"`])next\/dist\/server\/next-server\.js\2/g, `$1 './otel-mock.js'`);
           code = code.replace(/(require|import)\s*\(\s*(['"`])next\/dist\/server\/next-server\.js\2\s*\)/g, `$1('./otel-mock.js')`);
-
-          // import.meta.url対策
           code = code.replace(/import\.meta\.url/g, `"file:///_worker.js"`);
 
           fs.writeFileSync('dist/_worker.mjs', code);
@@ -72,7 +82,7 @@ jobs:
           # 2. Node.jsで安全にパッチを実行
           node dist/patch.js
 
-          # 3. 【修正】先頭への cat をやめ、ファイルの末尾にグローバル定義を安全に追記
+          # 3. ファイルの末尾にグローバル定義を安全に追記
           echo "" >> dist/_worker.mjs
           echo 'globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };' >> dist/_worker.mjs
 
