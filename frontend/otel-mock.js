@@ -26,7 +26,8 @@ const safe = new Proxy(mock, {
 export const ReadStream = safe;
 export const WriteStream = safe;
 export const readFile = safe;
-export const readFileSync = () => "{}"; // ← 【ココを修正】空のJSONオブジェクトを返すことで JSON.parse をパスさせます
+export const readFileSync = () =>
+  '{"name":"mock","version":"1.0.0","main":"index.js","types":"index.d.ts","dependencies":{},"devDependencies":{},"type":"module","engines":{"node":">=22.0.0"}}';
 export const writeFile = safe;
 export const writeFileSync = safe;
 export const promises = safe;
