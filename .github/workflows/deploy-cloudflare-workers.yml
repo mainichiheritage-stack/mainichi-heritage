@@ -26,30 +26,13 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Build
+      - name: Build Next.js for Cloudflare
         working-directory: frontend
         run: npm run build:cloudflare
-
-      - name: Prepare Clean Assets
-        working-directory: frontend
-        run: |
-          mkdir -p dist
-          cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
-
-          # 実行時エラーを防ぐ最低限のグローバル定義だけを安全に末尾に追加
-          echo "" >> dist/_worker.mjs
-          echo 'globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };' >> dist/_worker.mjs
-
-          if ! grep -q "export default" dist/_worker.mjs; then
-            echo "export default { fetch: (r, e, c) => globalThis.originalFetch?.(r, e, c) };" >> dist/_worker.mjs
-          fi
 
       - name: Deploy to Cloudflare
         working-directory: frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          cp wrangler.toml dist/wrangler.toml
-          cd dist
-          npx wrangler deploy --no-bundle --config wrangler.toml
+        run: npx wrangler deploy
