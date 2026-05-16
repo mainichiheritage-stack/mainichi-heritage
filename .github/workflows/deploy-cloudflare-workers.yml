@@ -30,73 +30,16 @@ jobs:
         working-directory: frontend
         run: npm run build:cloudflare
 
-      - name: Final Integrity Strategy (Precision Patching & Bottom Injection)
+      - name: Prepare Clean Assets
         working-directory: frontend
         run: |
           mkdir -p dist
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
-          cp otel-mock.js dist/otel-mock.js
 
-          # 1. 【最終調整】Next.jsのルーティング構造を完璧にシミュレートする救済ロジック
-          cat << 'EOF' > dist/patch.js
-          const fs = require('fs');
-          let code = fs.readFileSync('dist/_worker.mjs', 'utf8');
-
-          // beforeFiles や headers など、Next.jsが絶対に読み込むキーをあらかじめ掘っておきます
-          const jsonRescueShim = `
-            const _safeParse = (str) => {
-              if (!str || typeof str !== 'string' || str.trim() === '') {
-                return { routes: { beforeFiles: [], afterFiles: [], fallback: [] }, headers: [], rewrites: [] };
-              }
-              try { 
-                const parsed = JSON.parse(str);
-                if (parsed && typeof parsed === 'object') {
-                  if (!parsed.routes) parsed.routes = { beforeFiles: [], afterFiles: [], fallback: [] };
-                  if (!parsed.headers) parsed.headers = [];
-                  if (!parsed.rewrites) parsed.rewrites = [];
-                }
-                return parsed;
-              } catch (e) { 
-                return { routes: { beforeFiles: [], afterFiles: [], fallback: [] }, headers: [], rewrites: [] };
-              }
-            };
-          `;
-
-          code = jsonRescueShim + code;
-
-          // すべての JSON.parse を安全な関数に置換
-          code = code.replace(/JSON\.parse\s*\(/g, '_safeParse(');
-
-          // 置換対象のNode組み込みモジュール群
-          const builtins = [
-            'fs', 'path', 'crypto', 'stream', 'os', 'http', 'https', 'net', 'tls', 'zlib', 
-            'child_process', 'util', 'events', 'url', 'querystring', 'module', 'async_hooks', 
-            'perf_hooks', 'process', 'buffer', 'v8', 'vm', 'punycode', 'string_decoder', 
-            'diagnostics_channel', 'worker_threads', 'dns', 'dgram', 'tty', 'readline', 
-            'cluster', 'domain', 'inspector', 'repl', 'trace_events', 'wasi'
-          ];
-
-          const moduleRegex = new RegExp(`(from|import)\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2`, 'g');
-          const requireRegex = new RegExp(`(require|import)\\s*\\(\\s*(['"\`])(?:node:)?(?:${builtins.join('|')})\\2\\s*\\)`, 'g');
-
-          code = code.replace(moduleRegex, `$1 './otel-mock.js'`);
-          code = code.replace(requireRegex, `$1('./otel-mock.js')`);
-
-          code = code.replace(/(from|import)\s*(['"`])next\/dist\/server\/next-server\.js\2/g, `$1 './otel-mock.js'`);
-          code = code.replace(/(require|import)\s*\(\s*(['"`])next\/dist\/server\/next-server\.js\2\s*\)/g, `$1('./otel-mock.js')`);
-          code = code.replace(/import\.meta\.url/g, `"file:///_worker.js"`);
-
-          fs.writeFileSync('dist/_worker.mjs', code);
-          EOF
-
-          # 2. Node.jsで安全にパッチを実行
-          node dist/patch.js
-
-          # 3. ファイルの末尾にグローバル定義を安全に追記
+          # 実行時エラーを防ぐ最低限のグローバル定義だけを安全に末尾に追加
           echo "" >> dist/_worker.mjs
           echo 'globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };' >> dist/_worker.mjs
 
-          # 4. ESM default export 保証
           if ! grep -q "export default" dist/_worker.mjs; then
             echo "export default { fetch: (r, e, c) => globalThis.originalFetch?.(r, e, c) };" >> dist/_worker.mjs
           fi
