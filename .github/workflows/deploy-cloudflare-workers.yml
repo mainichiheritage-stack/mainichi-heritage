@@ -37,15 +37,14 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # node: 参照の置換
+          # 1. 安全な置換：明示的な 'node:xxxx' のインポートパスだけをモックに向ける（単体の 'fs' は触らない）
           perl -0777 -pi -e "s|['\"\`]node:[a-z0-9/._-]+['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
-          perl -0777 -pi -e "s|['\"\`]fs['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
           perl -0777 -pi -e "s|['\"\`]next/dist/server/next-server\.js['\"\`]|'./otel-mock.js'|g" dist/_worker.mjs
 
-          # undefined 回避パッチ
+          # 2. undefined 回避パッチ（createRequire対策）
           perl -pi -e "s/import\.meta\.url/'file:\/\/\/_worker.js'/g" dist/_worker.mjs
 
-          # 最小限のグローバル定義
+          # 3. 最小限のグローバル定義
           echo 'globalThis.process = { env: { NODE_ENV: "production" }, versions: { node: "22.0.0" }, nextTick: (f) => setTimeout(f, 0) };' > dist/header.tmp
 
           cat dist/header.tmp dist/_worker.mjs > dist/final_worker.mjs
