@@ -20,7 +20,9 @@ const safe = new Proxy(mock, {
 
 // --- 名前付きエクスポート (バリデーションを通過させるための全リスト) ---
 
-// node:fs (今回の 'readFile' エラー対策)
+// node:fs (今回の 'ReadStream' エラー対策＋関連ストリーム)
+export const ReadStream = safe; // ← コレを追加！
+export const WriteStream = safe; // ← コレを追加！
 export const readFile = safe;
 export const readFileSync = () => "";
 export const writeFile = safe;
@@ -32,7 +34,7 @@ export const lstatSync = () => ({ size: 0, mtime: new Date() });
 export const readdirSync = () => [];
 
 // node:stream / node:events / node:zlib
-export const Duplex = safe; // 前回の原因
+export const Duplex = safe;
 export const PassThrough = safe;
 export const Stream = safe;
 export const pipeline = safe;
