@@ -24,14 +24,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Build Next.js for Cloudflare
         working-directory: frontend
-        env:
-          NODE_OPTIONS: "--harmony-invalid-regexp"
-          CI: true
-        run: npm run build:cloudflare
+        run: CI=true npm run build:cloudflare
 
       - name: Deploy to Cloudflare
         working-directory: frontend
