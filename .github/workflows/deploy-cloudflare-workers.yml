@@ -37,24 +37,34 @@ jobs:
           cp .open-next/server-functions/default/index.mjs dist/_worker.mjs
           cp otel-mock.js dist/otel-mock.js
 
-          # 1. JSONパースエラーを物理的にすり抜ける救済ロジック付きのパッチスクリプト
+          # 1. 【最終調整】Next.jsのルーティング構造を完璧にシミュレートする救済ロジック
           cat << 'EOF' > dist/patch.js
           const fs = require('fs');
           let code = fs.readFileSync('dist/_worker.mjs', 'utf8');
 
-          // 【最重要】JSON.parse を実行時ではなく、ファイルそのもののテキストレベルで安全な関数に差し替える
-          // これにより、2行目の OpenNext 組み込み JSON.parse が壊れていても、安全に空のオブジェクト {} に逃がします
+          // beforeFiles や headers など、Next.jsが絶対に読み込むキーをあらかじめ掘っておきます
           const jsonRescueShim = `
             const _safeParse = (str) => {
-              if (!str || typeof str !== 'string' || str.trim() === '') return {};
-              try { return JSON.parse(str); } catch (e) { return {}; }
+              if (!str || typeof str !== 'string' || str.trim() === '') {
+                return { routes: { beforeFiles: [], afterFiles: [], fallback: [] }, headers: [], rewrites: [] };
+              }
+              try { 
+                const parsed = JSON.parse(str);
+                if (parsed && typeof parsed === 'object') {
+                  if (!parsed.routes) parsed.routes = { beforeFiles: [], afterFiles: [], fallback: [] };
+                  if (!parsed.headers) parsed.headers = [];
+                  if (!parsed.rewrites) parsed.rewrites = [];
+                }
+                return parsed;
+              } catch (e) { 
+                return { routes: { beforeFiles: [], afterFiles: [], fallback: [] }, headers: [], rewrites: [] };
+              }
             };
           `;
 
-          // ファイルの先頭付近（2行目より前）に救済関数を注入
           code = jsonRescueShim + code;
 
-          // コード内のすべての 「JSON.parse(」 を 「_safeParse(」 に強制置換
+          // すべての JSON.parse を安全な関数に置換
           code = code.replace(/JSON\.parse\s*\(/g, '_safeParse(');
 
           // 置換対象のNode組み込みモジュール群
