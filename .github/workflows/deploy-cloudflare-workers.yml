@@ -30,7 +30,6 @@ jobs:
       - name: Build Next.js for Cloudflare
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_BASE_URL: ${{ github.ref_name == 'main' && secrets.NEXT_PUBLIC_API_BASE_URL || 'https://mainichi-heritage-api-stg.onrender.com' }}
           CI: true
         run: npm run build:cloudflare
 
