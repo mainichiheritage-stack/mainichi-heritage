@@ -88,39 +88,6 @@ export default function Home() {
             {/* 機能 */}
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <Link
-                href="/about-exam"
-                className="block active:scale-[0.98] transition-transform"
-              >
-                <FeatureCard
-                  icon={<GraduationCap className="text-indigo-500" />}
-                  title="世界遺産検定とは"
-                  desc="検定の概要と対策方法"
-                  iconBg="bg-indigo-100"
-                />
-              </Link>
-              <Link
-                href="/current-events"
-                className="block active:scale-[0.98] transition-transform"
-              >
-                <FeatureCard
-                  icon={<Newspaper className="text-orange-600" />}
-                  title="時事問題"
-                  desc="最新の委員会情報や世界遺産ニュース"
-                  iconBg="bg-orange-100"
-                />
-              </Link>
-              <Link
-                href="/basic"
-                className="block active:scale-[0.98] transition-transform"
-              >
-                <FeatureCard
-                  icon={<Globe className="text-emerald-500" />}
-                  title="基礎知識"
-                  desc="世界遺産に関連する基礎知識を学ぶ"
-                  iconBg="bg-emerald-100"
-                />
-              </Link>
-              <Link
                 href="/heritages"
                 className="block active:scale-[0.98] transition-transform"
               >
@@ -142,6 +109,39 @@ export default function Home() {
                   iconBg="bg-green-100"
                 />
               </div>
+              <Link
+                href="/about-exam"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<GraduationCap className="text-indigo-500" />}
+                  title="世界遺産検定とは"
+                  desc="検定の概要と対策方法"
+                  iconBg="bg-indigo-100"
+                />
+              </Link>
+              <Link
+                href="/basic"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<Globe className="text-emerald-500" />}
+                  title="基礎知識"
+                  desc="世界遺産に関連する基礎知識を学ぶ"
+                  iconBg="bg-emerald-100"
+                />
+              </Link>
+              <Link
+                href="/current-events"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<Newspaper className="text-orange-600" />}
+                  title="時事問題"
+                  desc="最新の委員会情報や世界遺産ニュース"
+                  iconBg="bg-orange-100"
+                />
+              </Link>
               <div className="active:scale-[0.98] transition-transform">
                 <FeatureCard
                   icon={<History className="text-purple-500" />}
