@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { API_BASE_URL } from "@/config/env";
 
 interface QuizData {
   id: number;
@@ -80,7 +81,7 @@ function QuizContent() {
       category,
     });
 
-    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/quizzes/?${query.toString()}`;
+    const url = `${API_BASE_URL}/quizzes/?${query.toString()}`;
 
     try {
       const response = await fetch(url, {
