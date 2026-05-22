@@ -8,8 +8,6 @@ directory = ".open-next/assets"
 
 [vars]
 NODE_ENV = "production"
-NEXT_TELEMETRY_DISABLED = ""  # cloudflare側で設定するため空
-NEXT_PUBLIC_API_BASE_URL = "" # cloudflare側で設定するため空
 
 [[rules]]
 type = "ESModule"
@@ -24,5 +22,3 @@ directory = ".open-next/assets"
 
 [env.staging.vars]
 NODE_ENV = "production"
-NEXT_TELEMETRY_DISABLED = ""  # cloudflare側で設定するため空
-NEXT_PUBLIC_API_BASE_URL = "" # cloudflare側で設定するため空
