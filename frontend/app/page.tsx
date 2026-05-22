@@ -18,6 +18,7 @@ import { NotificationItem } from "./types";
 import NotificationModal from "@/components/NotificationModal";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { API_BASE_URL } from "@/config/env";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,9 +37,7 @@ export default function Home() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/`,
-        );
+        const response = await fetch(`${API_BASE_URL}/notifications/`);
         const data = await response.json();
         setNotifications(Array.isArray(data) ? data : data.results || []);
       } catch (error) {

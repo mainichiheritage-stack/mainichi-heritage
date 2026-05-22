@@ -22,6 +22,7 @@ import QuizSettingsModal from "../../components/QuizSettingsModal";
 import { Pagination } from "../../components/Pagination";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { API_BASE_URL } from "@/config/env";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -59,7 +60,7 @@ function HeritageListContent() {
     try {
       const categoryParam =
         queryCategory !== "0" ? `&category=${queryCategory}` : "";
-      url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/heritages/?page=${queryPage}&search=${encodeURIComponent(querySearch)}${categoryParam}`;
+      url = `${API_BASE_URL}/heritages/?page=${queryPage}&search=${encodeURIComponent(querySearch)}${categoryParam}`;
 
       const res = await fetch(url);
       const data = await res.json();
