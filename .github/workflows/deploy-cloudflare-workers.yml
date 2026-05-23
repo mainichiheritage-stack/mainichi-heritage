@@ -27,10 +27,30 @@ jobs:
         working-directory: frontend
         run: npm install --legacy-peer-deps
 
-      - name: Build Next.js for Cloudflare
+      # ----------------------------------------------------
+      # Staging環境用のビルド
+      # ----------------------------------------------------
+      - name: Build Next.js for Cloudflare (Staging)
+        if: github.ref_name == 'staging'
         working-directory: frontend
         env:
           CI: true
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.STG_API_BASE_URL }}
+          NEXT_PUBLIC_AXIOM_DATASET: ${{ secrets.STG_AXIOM_DATASET }}
+          NEXT_PUBLIC_AXIOM_TOKEN: ${{ secrets.STG_AXIOM_TOKEN }}
+        run: npm run build:cloudflare
+
+      # ----------------------------------------------------
+      # Production環境用のビルド
+      # ----------------------------------------------------
+      - name: Build Next.js for Cloudflare (Production)
+        if: github.ref_name == 'main'
+        working-directory: frontend
+        env:
+          CI: true
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
+          NEXT_PUBLIC_AXIOM_DATASET: ${{ secrets.PROD_AXIOM_DATASET }}
+          NEXT_PUBLIC_AXIOM_TOKEN: ${{ secrets.PROD_AXIOM_TOKEN }}
         run: npm run build:cloudflare
 
       # ----------------------------------------------------
@@ -44,14 +64,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
           environment: "staging"
-          secrets: |
-            API_BASE_URL
-            AXIOM_DATASET
-            AXIOM_TOKEN
-        env:
-          API_BASE_URL: ${{ secrets.STG_API_BASE_URL }}
-          AXIOM_DATASET: ${{ secrets.STG_AXIOM_DATASET }}
-          AXIOM_TOKEN: ${{ secrets.STG_AXIOM_TOKEN }}
 
       # ----------------------------------------------------
       # Production環境（mainブランチ）へのデプロイ
@@ -63,11 +75,3 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          secrets: |
-            API_BASE_URL
-            AXIOM_DATASET
-            AXIOM_TOKEN
-        env:
-          API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
-          AXIOM_DATASET: ${{ secrets.PROD_AXIOM_DATASET }}
-          AXIOM_TOKEN: ${{ secrets.PROD_AXIOM_TOKEN }}
