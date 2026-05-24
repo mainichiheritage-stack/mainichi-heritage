@@ -27,7 +27,6 @@ export interface Heritage {
   is_negative_heritage: boolean;
   is_cultural_landscape: boolean;
 
-  image_url: string | null;
   source_name?: string;
   source_url?: string;
 }

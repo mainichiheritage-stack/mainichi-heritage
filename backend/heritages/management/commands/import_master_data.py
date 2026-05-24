@@ -83,7 +83,6 @@ class Command(BaseCommand):
                         'registered_year': item.get('registered_year'),
                         'is_danger': item.get('is_danger', False),
                         'level': item.get('level', 2),
-                        'image_url': item.get('image_url', ''),
                         'source_name': item.get('source_name', ''),
                         'source_url': item.get('source_url', ''),
                     }

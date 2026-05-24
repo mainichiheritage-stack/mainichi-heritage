@@ -44,7 +44,6 @@ class Command(BaseCommand):
                 "registered_year": h.registered_year,
                 "is_danger": h.is_danger,
                 "level": h.level,
-                "image_url": h.image_url,
                 "source_name": h.source_name,
                 "source_url": h.source_url,
 
