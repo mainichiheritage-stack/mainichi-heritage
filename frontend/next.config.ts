@@ -17,7 +17,7 @@ const getR2Hostname = () => {
   ) {
     return "https://pub-11613cacfa20446fb4b7ab981c2e6006.r2.dev";
   }
-  return "pub-prod-yyyyyyyyyyyy.r2.dev";
+  return "https://pub-a381eb8984ac405cb2ba44a0641b294f.r2.dev";
 };
 
 const nextConfig: NextConfig = {
