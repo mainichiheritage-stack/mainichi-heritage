@@ -84,7 +84,6 @@ class Heritage(models.Model):
     is_cultural_landscape = models.BooleanField(default=False, verbose_name="文化的景観フラグ",)
 
     # 画像関連
-    image_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="画像URL")
     source_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="出典元")
     source_url = models.URLField(blank=True, null=True, verbose_name="出典元URL")
 

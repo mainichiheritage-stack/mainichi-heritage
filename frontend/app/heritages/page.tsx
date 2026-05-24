@@ -23,7 +23,7 @@ import QuizSettingsModal from "../../components/QuizSettingsModal";
 import { Pagination } from "../../components/Pagination";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
-import { API_BASE_URL } from "@/config/env";
+import { API_BASE_URL, R2_BASE_URL } from "@/config/env";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -52,6 +52,13 @@ function HeritageListContent() {
     useState<string>("");
   const [selectedQuizHeritageName, setSelectedQuizHeritageName] =
     useState<string>("");
+
+  const getImageUrl = (code: string | null | undefined) => {
+    if (!code) return "";
+
+    const filename = `heritages/${code}.webp`;
+    return `${R2_BASE_URL.replace(/\/$/, "")}/${filename}`;
+  };
 
   // --- データ取得ロジック ---
   const fetchHeritages = useCallback(async () => {
@@ -323,7 +330,7 @@ function HeritageListContent() {
               >
                 <div className="relative h-32 md:h-56 bg-slate-200">
                   <Image
-                    src={h.image_url || ""}
+                    src={getImageUrl(h.code)}
                     alt={h.name}
                     fill
                     unoptimized
@@ -464,11 +471,12 @@ function HeritageListContent() {
             <div className="overflow-y-auto">
               <div className="relative h-64 md:h-[450px]">
                 <Image
-                  src={selectedHeritage.image_url || ""}
+                  src={getImageUrl(selectedHeritage.code)}
                   alt={selectedHeritage.name}
                   fill
                   unoptimized
                   className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 33vw"
                 />
                 <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl opacity-100 transition-opacity duration-300">
                   <a
