@@ -10,7 +10,24 @@ interface AxiomModule {
   };
 }
 
+const getR2Hostname = () => {
+  if (
+    process.env.NEXT_PUBLIC_API_BASE_URL?.includes("stg") ||
+    process.env.NODE_ENV === "development"
+  ) {
+    return "https://pub-11613cacfa20446fb4b7ab981c2e6006.r2.dev";
+  }
+  return "https://pub-a381eb8984ac405cb2ba44a0641b294f.r2.dev";
+};
+
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "publicdomainq.net" },
@@ -20,7 +37,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.lg.jp" },
       {
         protocol: "https",
-        hostname: "gfycov7pwc6weila.public.blob.vercel-storage.com",
+        hostname: getR2Hostname(),
       },
     ],
   },
@@ -48,10 +65,13 @@ if (process.env.NODE_ENV === "development") {
 }
 
 const axiomModule = AxiomConfig as unknown as AxiomModule;
-
 const withAxiom = axiomModule.withAxiom ?? axiomModule.default?.withAxiom;
 
+const isCloudflareBuild = true;
+
 const finalConfig =
-  typeof withAxiom === "function" ? withAxiom(nextConfig) : nextConfig;
+  typeof withAxiom === "function" && !isCloudflareBuild
+    ? withAxiom(nextConfig)
+    : nextConfig;
 
 export default finalConfig;

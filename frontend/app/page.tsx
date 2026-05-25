@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import React from "react";
 import { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ import { NotificationItem } from "./types";
 import NotificationModal from "@/components/NotificationModal";
 import { log } from "@/utils/logger";
 import { LOG_MESSAGES } from "@/constants/messages";
+import { API_BASE_URL } from "@/config/env";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,9 +38,7 @@ export default function Home() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/`,
-        );
+        const response = await fetch(`${API_BASE_URL}/notifications/`);
         const data = await response.json();
         setNotifications(Array.isArray(data) ? data : data.results || []);
       } catch (error) {
@@ -89,39 +89,6 @@ export default function Home() {
             {/* 機能 */}
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <Link
-                href="/about-exam"
-                className="block active:scale-[0.98] transition-transform"
-              >
-                <FeatureCard
-                  icon={<GraduationCap className="text-indigo-500" />}
-                  title="世界遺産検定とは"
-                  desc="検定の概要と対策方法"
-                  iconBg="bg-indigo-100"
-                />
-              </Link>
-              <Link
-                href="/current-events"
-                className="block active:scale-[0.98] transition-transform"
-              >
-                <FeatureCard
-                  icon={<Newspaper className="text-orange-600" />}
-                  title="時事問題"
-                  desc="最新の委員会情報や世界遺産ニュース"
-                  iconBg="bg-orange-100"
-                />
-              </Link>
-              <Link
-                href="/basic"
-                className="block active:scale-[0.98] transition-transform"
-              >
-                <FeatureCard
-                  icon={<Globe className="text-emerald-500" />}
-                  title="基礎知識"
-                  desc="世界遺産に関連する基礎知識を学ぶ"
-                  iconBg="bg-emerald-100"
-                />
-              </Link>
-              <Link
                 href="/heritages"
                 className="block active:scale-[0.98] transition-transform"
               >
@@ -143,6 +110,39 @@ export default function Home() {
                   iconBg="bg-green-100"
                 />
               </div>
+              <Link
+                href="/about-exam"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<GraduationCap className="text-indigo-500" />}
+                  title="世界遺産検定とは"
+                  desc="検定の概要と対策方法"
+                  iconBg="bg-indigo-100"
+                />
+              </Link>
+              <Link
+                href="/basic"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<Globe className="text-emerald-500" />}
+                  title="基礎知識"
+                  desc="世界遺産に関連する基礎知識を学ぶ"
+                  iconBg="bg-emerald-100"
+                />
+              </Link>
+              <Link
+                href="/current-events"
+                className="block active:scale-[0.98] transition-transform"
+              >
+                <FeatureCard
+                  icon={<Newspaper className="text-orange-600" />}
+                  title="時事問題"
+                  desc="最新の委員会情報や世界遺産ニュース"
+                  iconBg="bg-orange-100"
+                />
+              </Link>
               <div className="active:scale-[0.98] transition-transform">
                 <FeatureCard
                   icon={<History className="text-purple-500" />}

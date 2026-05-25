@@ -1,8 +1,10 @@
 # --- Frontend (Next.js / Yarn / npm) ---
 frontend/node_modules/
 frontend/.next/
+frontend/.open-next/
 frontend/out/
 frontend/build/
+frontend/worker.js
 frontend/.pnp
 frontend/.pnp.*
 frontend/.yarn/*
