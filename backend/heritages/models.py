@@ -55,7 +55,6 @@ class Criterion(models.Model):
         verbose_name_plural = "登録基準マスタ"
 
 class Heritage(models.Model):
-
     CATEGORY_CHOICES = [
         (1, '文化遺産'),
         (2, '自然遺産'),
@@ -63,27 +62,22 @@ class Heritage(models.Model):
     ]
 
     # 世界遺産情報
-    code = models.CharField(
-        max_length=50,
-        unique=True,
-        verbose_name="コード"
-    )
+    code = models.CharField(max_length=50, unique=True, verbose_name="コード")
     name = models.CharField(max_length=255, verbose_name="世界遺産名")
     category = models.IntegerField(choices=CATEGORY_CHOICES, verbose_name="カテゴリー")
     catchphrase = models.CharField(max_length=255,blank=True, null=True,verbose_name="キャッチフレーズ")
-    description = models.TextField(blank=True, null=True, verbose_name="説明")
     registered_year = models.IntegerField(verbose_name="登録年")
-    countries = models.ManyToManyField(Country, related_name="heritages", verbose_name="所在国")
+    countries = models.ManyToManyField('Country', related_name="heritages", verbose_name="所在国")
     level = models.IntegerField(choices=LEVEL_CHOICES, default=2, verbose_name="対象級")
-    criteria = models.ManyToManyField(Criterion, related_name="heritages", verbose_name="登録基準")
+    criteria = models.ManyToManyField('Criterion', related_name="heritages", verbose_name="登録基準")
 
     # ジャンル
     is_danger = models.BooleanField(default=False, verbose_name="危機遺産フラグ")
     danger_registered_year = models.IntegerField(blank=True, null=True, verbose_name="危機遺産登録年")
     is_negative_heritage = models.BooleanField(default=False, verbose_name="負の遺産フラグ")
-    is_cultural_landscape = models.BooleanField(default=False, verbose_name="文化的景観フラグ",)
+    is_cultural_landscape = models.BooleanField(default=False, verbose_name="文化的景観フラグ")
 
-    # 画像関連
+    # メイン画像
     source_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="出典元")
     source_url = models.URLField(blank=True, null=True, verbose_name="出典元URL")
 
@@ -96,6 +90,65 @@ class Heritage(models.Model):
     class Meta:
         verbose_name = "世界遺産"
         verbose_name_plural = "世界遺産一覧"
+
+class HeritageSection(models.Model):
+    
+    SECTION_TYPE_CHOICES = [
+        ('summary', '概要'),
+        ('point', '注目ポイント'),
+        ('exam_notes', '検定攻略メモ'),
+    ]
+
+    heritage_code = models.ForeignKey(
+        Heritage,
+        to_field='code',
+        on_delete=models.CASCADE,
+        related_name='sections',
+        verbose_name="世界遺産コード"
+    )
+    sort_order = models.IntegerField(default=1, verbose_name="表示順")
+    section_type = models.CharField(
+        max_length=20,
+        choices=SECTION_TYPE_CHOICES,
+        default='point',
+        verbose_name="セクション種別"
+    )
+    
+    # 表示場所（級別に表示させる）
+    target_level = models.IntegerField(
+        choices=LEVEL_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="表示場所"
+    )
+
+    title = models.CharField(max_length=255, blank=True, null=True, verbose_name="セクションタイトル")
+    content = models.TextField(verbose_name="本文")
+    
+    # 出典元情報
+    image_code = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        verbose_name="画像コード"
+    )
+    source_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="出典元")
+    source_url = models.URLField(blank=True, null=True, verbose_name="出典元URL")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
+
+    def __str__(self):
+        type_str = self.get_section_type_display()
+        level_str = f"({self.get_target_level_display()})" if self.target_level else "(共通)"
+        title_str = f" - {self.title}" if self.title else ""
+        return f"[{self.heritage_code.code}] {type_str}{level_str}{title_str}"
+
+    class Meta:
+        db_table = 'heritages_heritage_section'
+        verbose_name = "世界遺産解説セクション"
+        verbose_name_plural = "世界遺産解説セクション一覧"
+        ordering = ['heritage_code', 'sort_order']
 
 class Quiz(models.Model):
     heritage = models.ForeignKey(
