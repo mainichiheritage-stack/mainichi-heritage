@@ -1,13 +1,33 @@
 from rest_framework import serializers
-from .models import Heritage , Quiz , Notification , Criterion
+from .models import Heritage, Quiz, Notification, Criterion, HeritageSection
 
 class CriterionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criterion
         fields = ['number', 'short_name', 'description']
 
+class HeritageSectionSerializer(serializers.ModelSerializer):
+    section_type_display = serializers.CharField(source='get_section_type_display', read_only=True)
+    target_level_display = serializers.CharField(source='get_target_level_display', read_only=True)
+
+    class Meta:
+        model = HeritageSection
+        fields = [
+            'id', 
+            'sort_order', 
+            'section_type', 
+            'section_type_display', 
+            'target_level', 
+            'target_level_display', 
+            'title', 
+            'content', 
+            'image_code',
+            'source_name',
+            'source_url'
+        ]
+
 class HeritageSerializer(serializers.ModelSerializer):
-    
+    sections = HeritageSectionSerializer(many=True, read_only=True)
     criteria = CriterionSerializer(many=True, read_only=True)
     countries = serializers.SlugRelatedField(
         many=True,

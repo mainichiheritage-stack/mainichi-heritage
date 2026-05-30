@@ -1,5 +1,10 @@
 import React from "react";
-import { ShieldCheck, Image as ImageIcon, Scale } from "lucide-react";
+import {
+  ShieldCheck,
+  Image as ImageIcon,
+  Scale,
+  AlertTriangle,
+} from "lucide-react";
 
 export default function LicensePage() {
   return (
@@ -81,7 +86,7 @@ export default function LicensePage() {
           {/* データの正確性 */}
           <section className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
             <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
-              <Scale className="text-emerald-500" size={24} />
+              <AlertTriangle className="text-emerald-500" size={24} />
               免責事項
             </h2>
             <div className="text-sm text-slate-600 space-y-4 leading-relaxed">

@@ -3,22 +3,21 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback, Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Heritage, Criterion } from "../types";
+import { Heritage } from "../types";
 import {
   Calendar,
   Search,
   ExternalLink,
   Inbox,
   X,
-  Info,
   PlayCircle,
   Globe,
   AlertTriangle,
   AlertCircle,
   Leaf,
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import QuizSettingsModal from "../../components/QuizSettingsModal";
 import { Pagination } from "../../components/Pagination";
 import { log } from "@/utils/logger";
@@ -44,9 +43,6 @@ function HeritageListContent() {
   // 入力中のテキスト
   const [inputText, setInputText] = useState(querySearch);
 
-  const [selectedHeritage, setSelectedHeritage] = useState<Heritage | null>(
-    null,
-  );
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [selectedQuizHeritageCode, setSelectedQuizHeritageCode] =
     useState<string>("");
@@ -140,6 +136,7 @@ function HeritageListContent() {
     heritageCode: string,
     heritageName: string,
   ) => {
+    e.preventDefault();
     e.stopPropagation();
     setSelectedQuizHeritageCode(heritageCode);
     setSelectedQuizHeritageName(heritageName);
@@ -147,75 +144,6 @@ function HeritageListContent() {
   };
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-
-  // --- サブコンポーネント (ツールチップなど) ---
-  const CriterionTooltip = ({
-    criterion,
-  }: {
-    criterion: Criterion | number;
-  }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    if (!criterion || typeof criterion === "number") {
-      return (
-        <span className="text-sm font-bold text-blue-600 px-1">
-          {criterion}
-        </span>
-      );
-    }
-    const closeTooltip = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setIsOpen(false);
-    };
-    return (
-      <span
-        className="relative inline-block mx-0.5"
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
-      >
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(!isOpen);
-          }}
-          className="font-bold text-blue-600 border-b border-dotted border-blue-400 cursor-pointer focus:outline-none"
-        >
-          {criterion.number}
-        </button>
-        {isOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-[110] md:hidden bg-black/10"
-              onClick={closeTooltip}
-            />
-            <div
-              className="p-6 bg-slate-800 text-white leading-relaxed rounded-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 z-[120] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[320px] text-[13px] md:absolute md:top-auto md:bottom-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-0 md:mb-3 md:w-64 md:p-4 md:text-[11px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <p className="font-bold border-b border-slate-600 mb-3 pb-2 text-blue-300 text-sm flex items-center gap-2">
-                <Info size={16} className="md:w-3 md:h-3" /> 登録基準{" "}
-                {criterion.number}
-              </p>
-              <div className="space-y-2">
-                <p className="font-bold text-slate-100 text-sm md:text-[12px]">
-                  {criterion.short_name}
-                </p>
-                <p className="text-slate-300 font-medium leading-relaxed">
-                  {criterion.description}
-                </p>
-              </div>
-              <button
-                onClick={closeTooltip}
-                className="absolute top-4 right-4 p-1.5 text-slate-400 bg-slate-700/50 rounded-full hover:text-white md:hidden"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          </>
-        )}
-      </span>
-    );
-  };
 
   const CategoryBadge = ({
     category,
@@ -323,9 +251,9 @@ function HeritageListContent() {
         {heritages.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
             {heritages.map((h) => (
-              <div
+              <Link
                 key={h.id}
-                onClick={() => setSelectedHeritage(h)}
+                href={`/heritages/${h.code}`}
                 className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-slate-100 group flex flex-col cursor-pointer"
               >
                 <div className="relative h-32 md:h-56 bg-slate-200">
@@ -338,16 +266,23 @@ function HeritageListContent() {
                     sizes="(max-width: 768px) 50vw, 33vw"
                   />
                   <div className="hidden md:flex absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded-md z-20">
-                    <a
-                      href={h.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[9px] text-white flex items-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
+                    <span
+                      role="button"
+                      className="text-[9px] text-white flex items-center gap-1 hover:text-blue-200 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (h.source_url)
+                          window.open(
+                            h.source_url,
+                            "_blank",
+                            "noopener,noreferrer",
+                          );
+                      }}
                     >
                       出典：{h.source_name || "unknown"}（加工あり）
                       <ExternalLink className="w-2 h-2" />
-                    </a>
+                    </span>
                   </div>
                 </div>
 
@@ -417,7 +352,7 @@ function HeritageListContent() {
                     <span className="xs:hidden">クイズ</span>
                   </button>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
@@ -451,132 +386,6 @@ function HeritageListContent() {
         questionTitle={selectedQuizHeritageName}
         category={"h"}
       />
-
-      {/* 詳細モーダル */}
-      {selectedHeritage && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setSelectedHeritage(null)}
-        >
-          <div
-            className="bg-white w-full max-w-4xl h-full max-h-[95vh] rounded-3xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedHeritage(null)}
-              className="absolute top-5 right-5 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-all active:scale-95"
-            >
-              <X className="w-5 h-5 text-slate-600" />
-            </button>
-            <div className="overflow-y-auto">
-              <div className="relative h-64 md:h-[450px]">
-                <Image
-                  src={getImageUrl(selectedHeritage.code)}
-                  alt={selectedHeritage.name}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                />
-                <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl opacity-100 transition-opacity duration-300">
-                  <a
-                    href={selectedHeritage.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] text-white flex items-center gap-1.5 hover:text-blue-200"
-                  >
-                    <span className="font-medium">
-                      出典: {selectedHeritage.source_name || "unknown"}
-                      （加工あり）
-                    </span>
-                    <ExternalLink className="w-3 h-3 opacity-70" />
-                  </a>
-                </div>
-              </div>
-              <div className="p-6 md:p-8">
-                {/* 世界遺産名 */}
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                  {selectedHeritage.name}
-                </h2>
-
-                {/* カテゴリ */}
-                <CategoryBadge
-                  category={selectedHeritage.category}
-                  className="text-[10px] md:text-xs uppercase tracking-wider mt-1.5"
-                />
-
-                {/* 危機遺産 */}
-                {selectedHeritage.is_danger && (
-                  <div className="flex items-center gap-1.5 text-red-600 font-bold text-[11px] md:text-sm bg-red-50 border border-red-100 px-3 py-1 rounded-full">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>
-                      危機遺産リストに登録中 (
-                      {selectedHeritage.danger_registered_year}年〜)
-                    </span>
-                  </div>
-                )}
-
-                {/* 負の遺産 */}
-                {selectedHeritage.is_negative_heritage && (
-                  <div className="flex items-center gap-1 text-slate-600 font-bold bg-slate-200 px-1.5 py-0.5 rounded">
-                    <AlertCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                    <span>負の遺産</span>
-                  </div>
-                )}
-
-                {/* 文化的景観 */}
-                {selectedHeritage.is_cultural_landscape && (
-                  <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px] md:text-sm bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
-                    <Leaf className="w-3.5 h-3.5" />
-                    <span>文化的景観</span>
-                  </div>
-                )}
-                <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-100 my-4">
-                  {/* 登録年 */}
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 block uppercase">
-                      登録年
-                    </span>
-                    <span className="font-medium">
-                      {selectedHeritage.registered_year}年
-                    </span>
-                  </div>
-
-                  {/* 所在国 */}
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 block uppercase">
-                      所在国
-                    </span>
-                    <span
-                      className="font-medium truncate block"
-                      title={selectedHeritage.countries?.join(", ")}
-                    >
-                      {selectedHeritage.countries?.join(", ")}
-                    </span>
-                  </div>
-
-                  {/* 登録基準 */}
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 block uppercase">
-                      登録基準
-                    </span>
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                      {selectedHeritage.criteria?.map((c: any, idx: number) => (
-                        <CriterionTooltip key={idx} criterion={c} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="prose prose-slate max-w-none">
-                  <ReactMarkdown>
-                    {selectedHeritage.description || "詳細情報はありません。"}
-                  </ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
