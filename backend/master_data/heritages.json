@@ -135,7 +135,7 @@
     "level": 2,
     "is_danger": false,
     "danger_registered_year": null,
-    "is_negative_heritage": false,
+    "is_negative_heritage": true,
     "is_cultural_landscape": false,
     "source_name": "Yu (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E3%81%9D%E3%81%AE%E4%B8%8A%E3%81%AB%E3%83%89%E3%83%BC%E3%83%A0%E3%81%8C%E3%81%82%E3%82%8B%E5%A4%A7%E3%81%8D%E3%81%AA%E5%BB%BA%E7%89%A9-Is_yO5vWko8",
@@ -246,7 +246,7 @@
     "is_danger": false,
     "danger_registered_year": null,
     "is_negative_heritage": false,
-    "is_cultural_landscape": false,
+    "is_cultural_landscape": true,
     "source_name": "Susann Schuster (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E6%A3%AE%E3%81%AE%E4%B8%AD%E3%82%92%E9%80%9A%E3%82%8B%E7%9F%B3%E6%AE%B5-EPH_IlA0Yx0",
     "country_codes": [
@@ -290,7 +290,7 @@
     "is_danger": false,
     "danger_registered_year": null,
     "is_negative_heritage": false,
-    "is_cultural_landscape": false,
+    "is_cultural_landscape": true,
     "source_name": "Yosuke Ota (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E7%B2%97%E5%89%8A%E3%82%8A%E3%81%AA%E9%89%B1%E5%B1%B1%E3%83%88%E3%83%B3%E3%83%8D%E3%83%AB%E3%81%AE%E7%85%A7%E6%98%8E%E4%BB%98%E3%81%8D%E3%81%AE%E5%B0%8F%E9%",
     "country_codes": [
@@ -319,7 +319,7 @@
       "JP"
     ],
     "criteria_codes": [
-      "c08"
+      "c09"
     ]
   },
   {
@@ -387,7 +387,7 @@
   },
   {
     "code": "h00019",
-    "name": "明治日本の産業革命遺産",
+    "name": "明治日本の産業革命遺産　製鉄・鉄鋼、造船、石炭産業",
     "category": 1,
     "catchphrase": "わずか50年で成し遂げた、非西洋圏初となる産業近代化の軌跡",
     "registered_year": 2015,
@@ -408,7 +408,7 @@
   },
   {
     "code": "h00020",
-    "name": "国立西洋美術館（ル・コルビュジエ作品）",
+    "name": "ル・コルビュジエの建築作品：近代建築運動への顕著な貢献",
     "category": 1,
     "catchphrase": "近代建築の巨匠が提唱した「無限発展美術館」を体現する傑作",
     "registered_year": 2016,
@@ -429,6 +429,7 @@
       "JP"
     ],
     "criteria_codes": [
+      "c01",
       "c02",
       "c06"
     ]
@@ -444,8 +445,8 @@
     "danger_registered_year": null,
     "is_negative_heritage": false,
     "is_cultural_landscape": false,
-    "source_name": "meinen ryu （pexles）",
-    "source_url": "https://www.pexels.com/ja-jp/photo/33022536/",
+    "source_name": "Indiana jo, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Okinoshima_viewing_04.jpg",
     "country_codes": [
       "JP"
     ],
@@ -546,7 +547,7 @@
     "is_danger": false,
     "danger_registered_year": null,
     "is_negative_heritage": false,
-    "is_cultural_landscape": false,
+    "is_cultural_landscape": true,
     "source_name": "Photo by Muramasa / CC BY-SA 3.0",
     "source_url": "https://commons.wikimedia.org/wiki/File:Sadokinzan-doyunowareto_01.JPG",
     "country_codes": [
@@ -889,7 +890,7 @@
     "registered_year": 1987,
     "level": 2,
     "is_danger": true,
-    "danger_registered_year": null,
+    "danger_registered_year": 2014,
     "is_negative_heritage": false,
     "is_cultural_landscape": false,
     "source_name": "Andrea Huls Pareja  (Unsplash)",
@@ -912,7 +913,7 @@
     "level": 2,
     "is_danger": false,
     "danger_registered_year": null,
-    "is_negative_heritage": false,
+    "is_negative_heritage": true,
     "is_cultural_landscape": false,
     "source_name": "Malek Bee  (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E3%82%A2%E3%82%A6%E3%82%B7%E3%83%A5%E3%83%93%E3%83%83%E3%83%84%E5%BC%B7%E5%88%B6%E5%8F%8E%E5%AE%B9%E6%89%80%E3%81%AB%E9%80%9A%E3%81%98%E3%82%8B%E7%B7%9A%E8%",
@@ -1643,7 +1644,7 @@
   },
   {
     "code": "h00076",
-    "name": "ヴァチカン市国",
+    "name": "ヴァティカン市国",
     "category": 1,
     "catchphrase": "世界最小の国家にして、カトリック教会の総本山。国全体が至宝の宝庫。",
     "registered_year": 1984,
@@ -2028,7 +2029,7 @@
     "registered_year": 1988,
     "level": 2,
     "is_danger": true,
-    "danger_registered_year": null,
+    "danger_registered_year": 2012,
     "is_negative_heritage": false,
     "is_cultural_landscape": false,
     "source_name": "Elektra Klimi (Unsplash)",
@@ -2074,7 +2075,7 @@
     "is_danger": false,
     "danger_registered_year": null,
     "is_negative_heritage": false,
-    "is_cultural_landscape": false,
+    "is_cultural_landscape": true,
     "source_name": "Antoine Fabre (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E3%82%A8%E3%82%A2%E3%83%BC%E3%82%BA%E3%83%AD%E3%83%83%E3%82%AF%E3%82%AA%E3%83%BC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%AA%E3%82%A2--lNJOUphtOQ",
     "country_codes": [
@@ -2227,7 +2228,7 @@
     "registered_year": 2001,
     "level": 2,
     "is_danger": true,
-    "danger_registered_year": null,
+    "danger_registered_year": 2017,
     "is_negative_heritage": false,
     "is_cultural_landscape": false,
     "source_name": "Reza Bina  (Unsplash)",
@@ -2281,7 +2282,7 @@
     ],
     "criteria_codes": [
       "c01",
-      "c05"
+      "c06"
     ]
   },
   {
@@ -2315,7 +2316,7 @@
     "is_danger": false,
     "danger_registered_year": null,
     "is_negative_heritage": false,
-    "is_cultural_landscape": false,
+    "is_cultural_landscape": true,
     "source_name": "Aldrin Brosas (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E6%98%BC%E9%96%93%E3%81%AE%E5%B1%B1-Yfh7E4KWDZ0",
     "country_codes": [
@@ -2337,7 +2338,7 @@
     "is_danger": false,
     "danger_registered_year": null,
     "is_negative_heritage": false,
-    "is_cultural_landscape": false,
+    "is_cultural_landscape": true,
     "source_name": "Anja Lee Ming Becker (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E7%B7%91%E8%B1%8A%E3%81%8B%E3%81%AA%E9%87%8E%E5%8E%9F%E3%81%AE%E4%B8%8A%E3%81%AB%E5%BB%BA%E3%81%A4%E5%A4%A7%E3%81%8D%E3%81%AA%E5%BB%BA%E7%89%A9-ccRfBRIE6Yk",
     "country_codes": [
@@ -2399,7 +2400,7 @@
     "registered_year": 1981,
     "level": 2,
     "is_danger": true,
-    "danger_registered_year": null,
+    "danger_registered_year": 1982,
     "is_negative_heritage": false,
     "is_cultural_landscape": false,
     "source_name": "Haley Black （pexles）",
@@ -2422,7 +2423,7 @@
     "level": 2,
     "is_danger": false,
     "danger_registered_year": null,
-    "is_negative_heritage": false,
+    "is_negative_heritage": true,
     "is_cultural_landscape": false,
     "source_name": "Grant Durr (Unsplash)",
     "source_url": "https://unsplash.com/ja/%E5%86%99%E7%9C%9F/%E9%BB%92%E3%81%A8%E7%81%B0%E8%89%B2%E3%81%AE%E3%82%B3%E3%83%B3%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%88%E3%81%AE%E5%BB%BA%E7%89%A9-Lh6c9CbNW1c",
