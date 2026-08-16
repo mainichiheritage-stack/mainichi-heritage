@@ -1,10 +1,9 @@
 import json
 import os
 from django.core.management.base import BaseCommand
-from heritages.models import Heritage, Country, Criterion, Quiz, Notification
+from heritages.models import Heritage, HeritageSection, Country, Criterion, Quiz, Notification
 
 class Command(BaseCommand):
-    help = '各テーブルのデータをcodeベースのリレーションでJSON出力します'
 
     def handle(self, *args, **options):
         # 出力ディレクトリの作成
@@ -32,7 +31,7 @@ class Command(BaseCommand):
             })
         self._write_json(os.path.join(output_dir, 'criteria.json'), criteria)
 
-        # 3. 世界遺産データの書き出し (中間テーブルをcodeに変換)
+        # 3. 世界遺産データの書き出し（中間テーブルはcodeベースに変換）
         heritages = []
         for h in Heritage.objects.all().order_by('code'):
             heritages.append({
@@ -40,21 +39,37 @@ class Command(BaseCommand):
                 "name": h.name,
                 "category": h.category,
                 "catchphrase": h.catchphrase,
-                "description": h.description,
                 "registered_year": h.registered_year,
-                "is_danger": h.is_danger,
                 "level": h.level,
-                "image_url": h.image_url,
+                "is_danger": h.is_danger,
+                "danger_registered_year": h.danger_registered_year,
+                "is_negative_heritage": h.is_negative_heritage,
+                "is_cultural_landscape": h.is_cultural_landscape,
                 "source_name": h.source_name,
                 "source_url": h.source_url,
-
-                # 中間テーブル
+                # 中間テーブルのリレーション
                 "country_codes": list(h.countries.values_list('code', flat=True).order_by('code')),
                 "criteria_codes": list(h.criteria.values_list('code', flat=True).order_by('code')),
             })
         self._write_json(os.path.join(output_dir, 'heritages.json'), heritages)
 
-        # 4. クイズデータの書き出し (親遺産をcodeで指定)
+        # 4. 世界遺産解説セクションデータの書き出し
+        sections = []
+        for sec in HeritageSection.objects.all().order_by('heritage_code__code', 'sort_order'):
+            sections.append({
+                "heritage_code": sec.heritage_code.code,
+                "sort_order": sec.sort_order,
+                "section_type": sec.section_type,
+                "target_level": sec.target_level,
+                "title": sec.title,
+                "content": sec.content,
+                "image_code": sec.image_code,
+                "source_name": sec.source_name,
+                "source_url": sec.source_url,
+            })
+        self._write_json(os.path.join(output_dir, 'heritage_sections.json'), sections)
+
+        # 5. クイズデータの書き出し
         quizzes = []
         for q in Quiz.objects.all().order_by('code'):
             quizzes.append({
@@ -71,13 +86,13 @@ class Command(BaseCommand):
             })
         self._write_json(os.path.join(output_dir, 'quizzes.json'), quizzes)
 
-        # 5. お知らせ（Notification）データの書き出し
+        # 6. お知らせ（Notification）データの書き出し
         notifications = []
         for n in Notification.objects.all().order_by('published_at'):
             notifications.append({
+                "category": n.category,
                 "title": n.title,
                 "content": n.content,
-                "category": n.category,
                 "published_at": n.published_at.isoformat() if n.published_at else None,
             })
         self._write_json(os.path.join(output_dir, 'notifications.json'), notifications)

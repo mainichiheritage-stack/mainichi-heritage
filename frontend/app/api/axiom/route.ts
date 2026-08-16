@@ -1,8 +1,6 @@
 import { Logger } from "next-axiom";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 export async function POST(req: NextRequest) {
   const axiom = new Logger();
 
