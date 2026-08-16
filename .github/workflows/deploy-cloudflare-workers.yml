@@ -1,0 +1,77 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    name: Build and deploy frontend to Cloudflare Workers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install --legacy-peer-deps
+
+      # ----------------------------------------------------
+      # Staging環境用のビルド
+      # ----------------------------------------------------
+      - name: Build Next.js for Cloudflare (Staging)
+        if: github.ref_name == 'staging'
+        working-directory: frontend
+        env:
+          CI: true
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.STG_API_BASE_URL }}
+          NEXT_PUBLIC_AXIOM_DATASET: ${{ secrets.STG_AXIOM_DATASET }}
+          NEXT_PUBLIC_AXIOM_TOKEN: ${{ secrets.STG_AXIOM_TOKEN }}
+        run: npm run build:cloudflare
+
+      # ----------------------------------------------------
+      # Production環境用のビルド
+      # ----------------------------------------------------
+      - name: Build Next.js for Cloudflare (Production)
+        if: github.ref_name == 'main'
+        working-directory: frontend
+        env:
+          CI: true
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
+          NEXT_PUBLIC_AXIOM_DATASET: ${{ secrets.PROD_AXIOM_DATASET }}
+          NEXT_PUBLIC_AXIOM_TOKEN: ${{ secrets.PROD_AXIOM_TOKEN }}
+        run: npm run build:cloudflare
+
+      # ----------------------------------------------------
+      # Staging環境（stagingブランチ）へのデプロイ
+      # ----------------------------------------------------
+      - name: Deploy to Cloudflare (Staging)
+        if: github.ref_name == 'staging'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: frontend
+          environment: "staging"
+
+      # ----------------------------------------------------
+      # Production環境（mainブランチ）へのデプロイ
+      # ----------------------------------------------------
+      - name: Deploy to Cloudflare (Production)
+        if: github.ref_name == 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: frontend

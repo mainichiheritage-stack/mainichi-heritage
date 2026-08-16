@@ -18,13 +18,17 @@ logger = logging.getLogger(__name__)
 class HeritageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Heritage.objects.all().order_by('-code')
     serializer_class = HeritageSerializer
+
+    # urlのパラメータをcodeにする（例：/api/heritages/h00001/）
+    lookup_field = 'code'
+    lookup_value_regex = '[^/]+'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
 
     # カテゴリー設定（?category=)
     filterset_fields = ['category'] 
     
     # 検索値設定（?search=）
-    search_fields = ['name', 'description', 'countries__name']
+    search_fields = ['name', 'countries__name']
 
 class QuizViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuizSerializer
