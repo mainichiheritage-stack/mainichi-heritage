@@ -64,26 +64,35 @@ const SectionImage = ({
 }) => {
   if (!src) return null;
 
+  // URLが存在するか判定（空文字、null、undefined を除外）
+  const hasUrl = sourceUrl && sourceUrl.trim() !== "";
+
   return (
     <div
       style={{ position: "relative" }}
       className={`relative rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-100 shadow-sm ${className}`}
     >
       <Image src={src} alt={alt} fill unoptimized className="object-cover" />
-      {(sourceName || sourceUrl) && (
+      {(sourceName || hasUrl) && (
         <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md max-w-[90%] z-10">
-          <a
-            href={sourceUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[9px] text-white flex items-center gap-1 hover:text-blue-200 cursor-pointer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="truncate">
-              出典：{sourceName || "リンク"}（加工あり）
+          {hasUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] text-white flex items-center gap-1 hover:text-blue-200 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="truncate">
+                出典：{sourceName || "リンク"}（加工あり）
+              </span>
+              <ExternalLink className="w-2 h-2 shrink-0" />
+            </a>
+          ) : (
+            <span className="text-[9px] text-white flex items-center gap-1 select-none">
+              <span className="truncate">出典：{sourceName}（加工あり）</span>
             </span>
-            {sourceUrl && <ExternalLink className="w-2 h-2 shrink-0" />}
-          </a>
+          )}
         </div>
       )}
     </div>
@@ -422,7 +431,7 @@ export default function HeritageDetailPage() {
               {heritage.catchphrase && (
                 <div className="border-l-4 border-blue-500 pl-4 py-0.5">
                   <p className="text-md md:text-lg font-bold text-slate-800 italic">
-                    「{heritage.catchphrase}」
+                    {heritage.catchphrase}
                   </p>
                 </div>
               )}
