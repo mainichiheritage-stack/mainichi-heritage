@@ -154,6 +154,8 @@ class Command(BaseCommand):
                 HeritageSection.objects.update_or_create(
                     heritage_code=heritage,
                     sort_order=item['sort_order'],
+                    section_type=item.get('section_type', 'point'),
+                    title=item.get('title'),
                     defaults={
                         'section_type': item.get('section_type', 'point'),
                         'target_level': item.get('target_level'),
